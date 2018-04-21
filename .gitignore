@@ -1,0 +1,3 @@
+# ignore these directories.
+/.git
+/test_lib
