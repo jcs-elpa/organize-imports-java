@@ -211,7 +211,8 @@ FILEPATH : .ini file to parse."
 
 (defun organize-imports-java-get-properties (ini-list in-key)
   "Get properties data.  Search by key and return value.
-INI-LIST : ini list.  Please use this with/after using `organize-imports-java-parse-ini' function.
+INI-LIST : ini list.  Please use this with/after using
+`organize-imports-java-parse-ini' function.
 IN-KEY : key to search for value."
   (let ((tmp-index 0)
         (tmp-key "")
@@ -267,11 +268,6 @@ FILEPATH : file path."
 
 (defun organize-imports-java-strip-duplicates (list)
   "Remove duplicate value from list.
-(list \"foo\" \"bar\" nil \"moo\" \"bar\" \"moo\" nil \"affe\")
-=> (list \"foo\" \"bar\" \"moo\" \"affe\").
-
-URL(jenchieh): https://stackoverflow.com/questions/3815467/stripping-duplicate-elements-in-a-list-of-strings-in-elisp
-
 LIST : list you want to remove duplicates."
   (let ((new-list nil))
     (while list
@@ -283,8 +279,6 @@ LIST : list you want to remove duplicates."
 (defun organize-imports-java-flatten (l)
   "Flatten the multiple dimensional array to one dimensonal array.
 '(1 2 3 4 (5 6 7 8)) => '(1 2 3 4 5 6 7 8).
-
-URL(jenchieh): https://stackoverflow.com/questions/2680864/how-to-remove-nested-parentheses-in-lisp
 
 L : list."
   (cond ((null l) nil)
@@ -479,14 +473,6 @@ FACENAME : face name to search."
       (when (string= (thing-at-point 'word) "import")
         (organize-imports-java-kill-whole-line))
       (jcs-previous-line))))
-
-(defun organize-imports-java-wordp (c)
-  "Check if character word."
-  (= ?w (char-syntax c)))
-
-(defun organize-imports-java-uppercasep (c)
-  "Check if character uppercase."
-  (and (organize-imports-java-wordp c) (= c (upcase c))))
 
 (defun organize-imports-java-is-digit-string (c)
   "Check if C is a digit."
