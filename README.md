@@ -27,12 +27,33 @@ This plugin only uses
 (define-key java-mode-map (kbd "C-S-o") 'organize-imports-java-do-imports)
 ```
 
+## INI Example ##
+```
+#
+# Include Java .jar file paths.
+#
+# THIS IS A TEST .OIJ FILE.
+#
+
+# Using JavaSE-1.7 Environment.
+rt=::SDK_PATH::/jre/lib/rt.jar
+
+# Libraries
+JCSQtJ-1.0.2=./test_lib/JCSQtJ-1.0.2.jar
+qtjambi-4.8.7=./test_lib/qtjambi-4.8.7.jar
+
+```
+
+
 ## Screen Shot ##
 <img src="./screen_shot/orangize_imports_java_demo1.gif"/>
 
+
 ## Some Possible Improvement ##
-* Performance is terrible when loading all the jar file to path.
-Hopefully I can find out some way around this issue.
+* Performance is terrible when loading all the jar files to path.
+Hopefully I can find out a way to get around this issue.
+* Performance imporvement when do imports task.
+
 
 ## Contribution ##
 If you would like to contribute to this project. You may either
