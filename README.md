@@ -1,6 +1,6 @@
 # organize-imports-java #
 
-Organize Imports Java is an orgainze imports functionalities plugins
+Organize Imports Java is an organize imports functionalities plugins
 for editing Java code. The only purpose of this project is to
 implement the functionalities of how eclipse treated as C-S-o key.
 This plugin only uses elisp without using any other plugin, so it
