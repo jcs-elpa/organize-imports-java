@@ -4,11 +4,7 @@ import java.awt.FlowLayout;
 import java.lang.Runnable;
 
 import javax.swing.JFrame;
-import javax.swing.JFrame;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
