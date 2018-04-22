@@ -1,3 +1,6 @@
 # ignore these directories.
 /.git
 /test_lib
+
+# ignore generated files.
+*.elc
