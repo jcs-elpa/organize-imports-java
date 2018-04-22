@@ -8,17 +8,21 @@ make this plugin more portable and light weight.
 <br/><br/>
 
 ## Configuration ##
+Setup Java JDK.
 ```
-;; Setup Java JDK.
 (setq organize-imports-java-java-sdk-path "/path/to/java/jdk/")
+```
 
-;; Include all your library path in the file. Should place
-;; this file at the root of version control directory.
+Include all your library path in the file. Should place
+this file at the root of version control directory.
+```
 (setq organize-imports-java-lib-inc-file "oij.ini")
+```
 
-;; After reading all the library path, this file will be generated
-;; for cache search on what library should be import to current
-;; buffer/file.
+After reading all the library path, this file will be generated
+for cache search on what library should be import to current
+buffer/file.
+```
 (setq organize-impots-java-path-config-file "paths-config.oij")
 ```
 
