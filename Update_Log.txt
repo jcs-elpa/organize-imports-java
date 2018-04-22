@@ -8,5 +8,10 @@
 # ========================================================================
 
 
+2018-04-22
+* Made configuration available. (organize-imports-java)
+* Pass `checkdoc' for melpa. (organize-imports-java)
+* Compile cleanly with `byte-compile-file' command. (organize-imports-java)
+
 2018-04-16
 * First setup project. (organize-imports-java)
