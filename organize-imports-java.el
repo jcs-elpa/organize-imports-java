@@ -26,6 +26,20 @@
 
 ;;; Commentary:
 
+;;
+;; Organize Imports Java is an organize imports functionalities
+;; plugins for editing Java code.  The only purpose of this
+;; project is to implement the functionalities of how eclipse
+;; treated as C-S-o key.  This plugin only uses elisp without
+;; using any other plugin, so it make this plugin more portable
+;; and light weight.
+;;
+;; (@* "TODO" )
+;; * Performance is terrible when loading all the jar files to path.
+;;   Hopefully I can find out a way to get around this issue.
+;; * Performance imporvement when do imports task.
+;;
+
 ;;; Code:
 
 (defvar organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
@@ -37,7 +51,7 @@
 (defvar organize-imports-java-lib-inc-file "oij.ini"
   "Java library include config file.")
 
-(defvar organize-impots-java-path-config-file "paths-config.oij"
+(defvar organize-imports-java-path-config-file "paths-config.oij"
   "File generate store all the Java paths.")
 
 (defvar organize-imports-java-vc-list '(".bzr"
@@ -83,21 +97,11 @@ INSTR : string using to check if is contain one of the INLIST."
         (setq tmp-found t)))
     (equal tmp-found t)))
 
-(defun organize-imports-java-keep-n-line-between (n-line)
-  "Keep n line between the two line of code.  (Guarantee)
-N-LINE : line between the two line of code"
-  (save-excursion
-    (let ((index 0))
-      (while (< index n-line)
-        (jcs-keep-one-line-between)
-        ;; increament one.
-        (setq index (1+ index))))))
-
 ;;;###autoload
 (defun organize-imports-java-keep-one-line-between ()
   "Keep one line between the two line of code.
 If you want to keep more than one line use
-`jcs-keep-n-line-between' instead."
+`organize-imports-java-keep-n-line-between' instead."
   (interactive)
   (if (current-line-empty-p)
       (progn
@@ -199,10 +203,10 @@ FILEPATH : .ini file to parse."
         (when (and (not (string= tmp-keyword ""))
                    (not (equal tmp-value nil)))
           (let ((tmp-list '()))
-            (add-to-list 'tmp-list tmp-keyword)
+            (push tmp-keyword tmp-list)
             (setq tmp-ini-list (append tmp-ini-list tmp-list)))
           (let ((tmp-list '()))
-            (add-to-list 'tmp-list tmp-value)
+            (push tmp-value tmp-list)
             (setq tmp-ini-list (append tmp-ini-list tmp-list)))))
       (setq count (1+ count)))
 
@@ -247,7 +251,6 @@ STR : string to check if is inside the list of strings above."
 
 (defun organize-imports-java-re-seq (regexp string)
   "Get a list of all regexp match in a string.
-URL(jenchieh): https://emacs.stackexchange.com/questions/7148/get-all-regexp-matches-in-buffer-as-a-list
 
 REGEXP : regular expression.
 STRING : string to do searching."
@@ -258,13 +261,6 @@ STRING : string to do searching."
         (push (match-string 0 string) matches)
         (setq pos (match-end 0)))
       matches)))
-
-(defun orgainze-imports-java-get-string-from-file (filePath)
-  "Return filePath's file content.
-FILEPATH : file path."
-  (with-temp-buffer
-    (insert-file-contents filePath)
-    (buffer-string)))
 
 (defun organize-imports-java-strip-duplicates (list)
   "Remove duplicate value from list.
@@ -296,7 +292,7 @@ L : list."
                            organize-imports-java-lib-inc-file))
         (tmp-lib-list '())
         ;; Key read from the .ini/.properties file.
-        (tmp-lib-key "")
+        ;;(tmp-lib-key "")
         ;; Value read from the .ini/.properties file.
         (tmp-lib-path "")
         ;; Buffer read depends on one of the `tmp-lib-path'.
@@ -320,7 +316,7 @@ L : list."
 
       (while (< tmp-index tmp-lib-list-length)
         ;; Get the key of the path.
-        (setq tmp-lib-key (nth tmp-index tmp-lib-list))
+        ;;(setq tmp-lib-key (nth tmp-index tmp-lib-list))
         ;; Get the value of the path.
         (setq tmp-lib-path (nth (1+ tmp-index) tmp-lib-list))
 
@@ -351,7 +347,7 @@ L : list."
                               tmp-lib-buffer))
 
         ;; Add the paths to the list.
-        (add-to-list 'organize-imports-java-path-buffer tmp-class-list)
+        (push tmp-class-list organize-imports-java-path-buffer)
 
         ;; Add up index.
         (setq tmp-index (+ tmp-index 2))))))
@@ -361,7 +357,7 @@ L : list."
   (write-region ""  ;; Start, insert nothing here in order to clean it.
                 nil  ;; End
                 ;; File name (concatenate full path)
-                (concat (organize-imports-java-vc-root-dir) organize-impots-java-path-config-file)
+                (concat (organize-imports-java-vc-root-dir) organize-imports-java-path-config-file)
                 ;; Overwrite?
                 nil))
 
@@ -414,7 +410,7 @@ L : list."
     (write-region tmp-write-to-file-content-buffer  ;; Start
                   nil  ;; End
                   ;; File name (concatenate full path)
-                  (concat (organize-imports-java-vc-root-dir) organize-impots-java-path-config-file)
+                  (concat (organize-imports-java-vc-root-dir) organize-imports-java-path-config-file)
                   ;; Overwrite?
                   t)))
 
@@ -434,7 +430,7 @@ FACENAME : face name in string."
   "Get all the type keywords in current buffer.
 FACENAME : face name to search."
 
-  (let (tmp-keyword-list '())
+  (let ((tmp-keyword-list '()))
     (save-excursion
       ;; Goto the end of the buffer.
       (goto-char (point-max))
@@ -442,11 +438,12 @@ FACENAME : face name to search."
       (while (< (point-min) (point))
         (backward-word)
         (when (organize-imports-java-current-point-face-p faceName)
-          (add-to-list 'tmp-keyword-list (thing-at-point 'word)))))
+          (push (thing-at-point 'word) tmp-keyword-list))))
     tmp-keyword-list))
 
 (defun organize-imports-java-insert-import-lib (tmp-one-path)
-  "Insert the import code line here.  Also design it here."
+  "Insert the import code line here.  Also design it here.
+Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/code."
   (insert "import ")
   (insert tmp-one-path)
   (insert ";\n"))
@@ -496,7 +493,7 @@ FACENAME : face name to search."
   (organize-imports-java-clear-all-imports)
 
   (save-excursion
-    (let ((tmp-config-fullpath (concat (organize-imports-java-vc-root-dir) organize-impots-java-path-config-file)))
+    (let ((tmp-config-fullpath (concat (organize-imports-java-vc-root-dir) organize-imports-java-path-config-file)))
       ;; If the file does not exists, load the Java path once.
       ;; Get this plugin ready to use.
       (when (not (file-exists-p tmp-config-fullpath))
@@ -536,7 +533,7 @@ FACENAME : face name to search."
                   (setq tmp-one-path tmp-path)
 
                   ;; add the path to pre-insert list.
-                  (add-to-list 'tmp-pre-insert-path-list tmp-one-path))))))
+                  (push tmp-one-path tmp-pre-insert-path-list))))))
 
         ;; Sort in alphabetic order.
         (setq tmp-pre-insert-path-list (sort tmp-pre-insert-path-list 'string<))
@@ -574,4 +571,4 @@ FACENAME : face name to search."
 
 
 (provide 'organize-imports-java)
-;;; organize-impots-java.el ends here
+;;; organize-imports-java.el ends here
