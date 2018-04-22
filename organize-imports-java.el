@@ -365,54 +365,63 @@ L : list."
 (defun organize-imports-java-reload-paths ()
   "Reload the Java include paths once."
   (interactive)
+  ;; Make sure the .ini/.properties file exists before anything.
+  (if (file-exists-p (concat (organize-imports-java-vc-root-dir) organize-imports-java-lib-inc-file))
+      (progn
+        ;; Import all libs/jars.
+        (organize-imports-java-unzip-lib)
 
-  ;; Import all libs/jars.
-  (organize-imports-java-unzip-lib)
+        ;; Flatten it.
+        (setq organize-imports-java-path-buffer
+              (organize-imports-java-flatten organize-imports-java-path-buffer))
 
-  ;; Flatten it.
-  (setq organize-imports-java-path-buffer
-        (organize-imports-java-flatten organize-imports-java-path-buffer))
+        ;; Remove duplicates value from list.
+        (setq organize-imports-java-path-buffer
+              (organize-imports-java-strip-duplicates organize-imports-java-path-buffer))
 
-  ;; Remove duplicates value from list.
-  (setq organize-imports-java-path-buffer
-        (organize-imports-java-strip-duplicates organize-imports-java-path-buffer))
+        ;; Erase buffer before inserting.
+        (organize-imports-java-erase-config-file)
 
-  ;; Erase buffer before inserting.
-  (organize-imports-java-erase-config-file)
+        (let ((tmp-first-char-from-path "")
+              (tmp-write-to-file-content-buffer ""))
 
-  (let ((tmp-first-char-from-path "")
-        (tmp-write-to-file-content-buffer ""))
+          ;; Write into file so we don't need to do it every times.
+          (dolist (tmp-path organize-imports-java-path-buffer)
+            ;; Get the first character of the path.
+            (setq tmp-first-char-from-path (substring tmp-path 0 1))
 
-    ;; Write into file so we don't need to do it every times.
-    (dolist (tmp-path organize-imports-java-path-buffer)
-      ;; Get the first character of the path.
-      (setq tmp-first-char-from-path (substring tmp-path 0 1))
+            (when (and (not (equal (upcase tmp-first-char-from-path) tmp-first-char-from-path))
+                       (not (organize-imports-java-is-contain-list-string organize-imports-java-non-src-list
+                                                                          tmp-path))
+                       (not (organize-imports-java-is-digit-string tmp-first-char-from-path))
+                       (not (string= tmp-first-char-from-path "-"))
+                       (not (string= tmp-first-char-from-path ".")))
+              ;; Swap `/' to `.'.
+              (setq tmp-path (s-replace "/" "." tmp-path))
 
-      (when (and (not (equal (upcase tmp-first-char-from-path) tmp-first-char-from-path))
-                 (not (organize-imports-java-is-contain-list-string organize-imports-java-non-src-list
-                                                                    tmp-path))
-                 (not (organize-imports-java-is-digit-string tmp-first-char-from-path))
-                 (not (string= tmp-first-char-from-path "-"))
-                 (not (string= tmp-first-char-from-path ".")))
-        ;; Swap `/' to `.'.
-        (setq tmp-path (s-replace "/" "." tmp-path))
+              ;; Remove `.class'.
+              (setq tmp-path (s-replace ".class" "" tmp-path))
 
-        ;; Remove `.class'.
-        (setq tmp-path (s-replace ".class" "" tmp-path))
+              ;; Add line break at the end.
+              (setq tmp-path (concat tmp-path "\n"))
 
-        ;; Add line break at the end.
-        (setq tmp-path (concat tmp-path "\n"))
+              ;; add to file content buffer.
+              (setq tmp-write-to-file-content-buffer (concat tmp-path tmp-write-to-file-content-buffer))))
 
-        ;; add to file content buffer.
-        (setq tmp-write-to-file-content-buffer (concat tmp-path tmp-write-to-file-content-buffer))))
-
-    ;; Write to file all at once.
-    (write-region tmp-write-to-file-content-buffer  ;; Start
-                  nil  ;; End
-                  ;; File name (concatenate full path)
-                  (concat (organize-imports-java-vc-root-dir) organize-imports-java-path-config-file)
-                  ;; Overwrite?
-                  t)))
+          ;; Write to file all at once.
+          (write-region tmp-write-to-file-content-buffer  ;; Start
+                        nil  ;; End
+                        ;; File name (concatenate full path)
+                        (concat (organize-imports-java-vc-root-dir) organize-imports-java-path-config-file)
+                        ;; Overwrite?
+                        t)))
+    (progn
+      (error "%s"
+             (propertize (concat "Include jar path file missing : "
+                                 (organize-imports-java-vc-root-dir)
+                                 organize-imports-java-lib-inc-file)
+                         'face
+                         '(:foreground "cyan"))))))
 
 (defun organize-imports-java-get-current-point-face ()
   "Get current point's type face as string."
