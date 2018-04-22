@@ -448,6 +448,8 @@ FACENAME : face name to search."
         (backward-word)
         (when (organize-imports-java-current-point-face-p faceName)
           (push (thing-at-point 'word) tmp-keyword-list))))
+    ;; Remove duplicate
+    (setq tmp-keyword-list (organize-imports-java-strip-duplicates tmp-keyword-list))
     tmp-keyword-list))
 
 (defun organize-imports-java-insert-import-lib (tmp-one-path)
@@ -493,6 +495,23 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
       (string= c "8")
       (string= c "9")))
 
+
+(defvar organize-imports-java-pre-insert-path-list '()
+  "Paths that are ready to insert.")
+
+(defvar organize-imports-java-same-class-name-list '()
+  "Paths will store temporary, use to check if multiple class exists in the environment.")
+
+;;;###autoload
+(defun organize-imports-java-same-class-ask (type)
+  "Ask the user which path should you import?
+TYPE : path string will be store at."
+  (interactive
+   (list (completing-read
+          "Choose select class: " organize-imports-java-same-class-name-list)))
+  (push type organize-imports-java-pre-insert-path-list))
+
+
 ;;;###autoload
 (defun organize-imports-java-do-imports ()
   "Do the functionalitiies of how organize imports work."
@@ -513,9 +532,7 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
             ;; Read file to buffer.
             (tmp-path-buffer (organize-imports-java-get-string-from-file tmp-config-fullpath))
             (tmp-path-list '())
-            (tmp-one-path "")
-            ;; Paths that are ready to insert.
-            (tmp-pre-insert-path-list '()))
+            (tmp-one-path ""))
 
         ;; Make the path buffer back to list.
         ;;
@@ -525,27 +542,52 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
         (setq tmp-path-list (split-string tmp-path-buffer "\n"))
 
         (dolist (tmp-type-class-keyword tmp-type-keyword-list)
-          (dolist (tmp-path tmp-path-list)
-            (when (not (organize-imports-java-is-in-list-string organize-imports-java-unsearch-class-type
-                                                                tmp-type-class-keyword))
-              (let ((tmp-split-path-list '())
-                    (tmp-last-element ""))
+          (let ((tmp-same-class-name-list-length -1))
+            (dolist (tmp-path tmp-path-list)
+              (when (not (organize-imports-java-is-in-list-string organize-imports-java-unsearch-class-type
+                                                                  tmp-type-class-keyword))
+                (let ((tmp-split-path-list '())
+                      (tmp-last-element ""))
 
-                ;; split the string into list
-                (setq tmp-split-path-list (split-string tmp-path "\\."))
+                  ;; split the string into list
+                  (setq tmp-split-path-list (split-string tmp-path "\\."))
 
-                ;; the last element is always the class name.
-                (setq tmp-last-element (nth (1- (length tmp-split-path-list)) tmp-split-path-list))
+                  ;; the last element is always the class name.
+                  (setq tmp-last-element (nth (1- (length tmp-split-path-list)) tmp-split-path-list))
 
-                ;; Check the last class name is the same.
-                (when (string= tmp-type-class-keyword tmp-last-element)
-                  (setq tmp-one-path tmp-path)
+                  ;; Check the last class name is the same.
+                  (when (string= tmp-type-class-keyword tmp-last-element)
+                    (setq tmp-one-path tmp-path)
 
-                  ;; add the path to pre-insert list.
-                  (push tmp-one-path tmp-pre-insert-path-list))))))
+                    ;; add to check same class name list.
+                    (push tmp-one-path organize-imports-java-same-class-name-list)))))
+
+            ;; Remove duplicate.
+            (setq organize-imports-java-same-class-name-list (organize-imports-java-strip-duplicates organize-imports-java-same-class-name-list))
+
+            ;; Get the length of the check same class list.
+            (setq tmp-same-class-name-list-length (length organize-imports-java-same-class-name-list))
+
+            (cond ((= tmp-same-class-name-list-length 1)
+                   (progn
+                     ;; Is exactly 1 result. Just add that to the
+                     ;; final pre-insert list.
+                     (push (nth 0 organize-imports-java-same-class-name-list) organize-imports-java-pre-insert-path-list)))
+                  ((>= tmp-same-class-name-list-length 2)
+                   (progn
+                     ;; Is is more than 2 results. Meaning we
+                     ;; need the user to select which class
+                     ;; to import!
+                     (call-interactively 'organize-imports-java-same-class-ask))))
+
+            ;; Clean the paths
+            (setq organize-imports-java-same-class-name-list '())))
+
+        ;; Remove duplicate for pre insert list.
+        (setq organize-imports-java-pre-insert-path-list (organize-imports-java-strip-duplicates organize-imports-java-pre-insert-path-list))
 
         ;; Sort in alphabetic order.
-        (setq tmp-pre-insert-path-list (sort tmp-pre-insert-path-list 'string<))
+        (setq organize-imports-java-pre-insert-path-list (sort organize-imports-java-pre-insert-path-list 'string<))
 
         ;; Check package keyword exists.
         (goto-char (point-min))
@@ -559,7 +601,7 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
         (let ((tmp-split-path-list '())
               (tmp-first-element "")
               (tmp-record-first-element ""))
-          (dolist (tmp-in-path tmp-pre-insert-path-list)
+          (dolist (tmp-in-path organize-imports-java-pre-insert-path-list)
 
             ;; split the path into list by using `.' delimiter.
             (setq tmp-split-path-list (split-string tmp-in-path "\\."))
@@ -574,6 +616,9 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
               (setq tmp-record-first-element tmp-first-element))
 
             (organize-imports-java-insert-import-lib tmp-in-path)))
+
+        ;; Clean pre insert list for next use.
+        (setq organize-imports-java-pre-insert-path-list '())
 
         ;; keep one line.
         (organize-imports-java-keep-one-line-between)))))
