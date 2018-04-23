@@ -1,5 +1,8 @@
 # ignore these directories.
 /.git
+/recipes
+/oij_examples
+/src
 /test_lib
 organize-imports-java-pkg.el
 

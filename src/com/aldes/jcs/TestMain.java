@@ -1,15 +1,6 @@
 package com.aldes.jcs;
 
-import java.awt.FlowLayout;
-import java.lang.Runnable;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 /**
  * $File: TestMain.java $
