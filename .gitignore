@@ -1,6 +1,7 @@
 # ignore these directories.
 /.git
 /test_lib
+organize-imports-java-pkg.el
 
 # ignore generated files.
 *.elc
