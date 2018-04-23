@@ -42,6 +42,8 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
 (defvar organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
   "Java SDK Path.")
 
@@ -86,14 +88,14 @@
   "Type face that Jave applied to use.")
 
 
-(defun organize-imports-java-is-contain-list-string (inList inStr)
+(defun organize-imports-java-is-contain-list-string (in-list in-str)
   "Check if a string contain in any string in the string list.
-INLIST : list of string use to check if INSTR in contain one of
+IN-LIST : list of string use to check if INSTR in contain one of
 the string.
-INSTR : string using to check if is contain one of the INLIST."
+IN-STR : string using to check if is contain one of the INLIST."
   (let ((tmp-found nil))
-    (dolist (tmpStr inList)
-      (when (organize-imports-java-contain-string tmpStr inStr)
+    (dolist (tmp-str in-list)
+      (when (organize-imports-java-contain-string tmp-str in-str)
         (setq tmp-found t)))
     (equal tmp-found t)))
 
@@ -105,7 +107,7 @@ If you want to keep more than one line use
   (interactive)
   (if (current-line-empty-p)
       (progn
-        (jcs-next-line)
+        (forward-line 1)
 
         ;; Kill empty line until there is one line.
         (while (current-line-empty-p)
@@ -114,46 +116,43 @@ If you want to keep more than one line use
       ;; Make sure have one empty line between.
       (insert "\n"))))
 
-(defun organize-imports-java-get-string-from-file (filePath)
-  "Return filePath's file content.
+(defun organize-imports-java-get-string-from-file (file-path)
+  "Return file-path's file content.
 FILEPATH : file path."
   (with-temp-buffer
-    (insert-file-contents filePath)
+    (insert-file-contents file-path)
     (buffer-string)))
 
 (defun organize-imports-java-get-current-dir ()
   "Return the string of current directory."
   default-directory)
 
-(defun organize-imports-java-file-directory-exists-p (filePath)
+(defun organize-imports-java-file-directory-exists-p (file-path)
   "Return `True' if the directory/file exists.
 Return `False' if the directory/file not exists.
 
-FILEPATH : directory/file path.
+FILEPATH : directory/file path."
+  (equal (file-directory-p file-path) t))
 
-NOTE(jenchieh): Weird this only works for directory not for
-the file."
-  (equal (file-directory-p filePath) t))
-
-(defun organize-imports-java-is-vc-dir-p (dirPath)
+(defun organize-imports-java-is-vc-dir-p (dir-path)
   "Return `True' is version control diectory.
 Return `False' not a version control directory.
-DIRPATH : directory path."
+DIR-PATH : directory path."
 
   (let ((tmp-is-vc-dir nil))
     (dolist (tmp-vc-type organize-imports-java-vc-list)
-      (let ((tmp-check-dir (concat dirPath "/" tmp-vc-type)))
+      (let ((tmp-check-dir (concat dir-path "/" tmp-vc-type)))
         (when (organize-imports-java-file-directory-exists-p tmp-check-dir)
           (setq tmp-is-vc-dir t))))
     ;; Return retult.
     (equal tmp-is-vc-dir t)))
 
-(defun organize-imports-java-up-one-dir-string (dirPath)
+(defun organize-imports-java-up-one-dir-string (dir-path)
   "Go up one directory and return it directory string.
-DIRPATH : directory path."
+DIR-PATH : directory path."
   ;; Remove the last directory in the path.
-  (string-match "\\(.*\\)/" dirPath)
-  (match-string 1 dirPath))
+  (string-match "\\(.*\\)/" dir-path)
+  (match-string 1 dir-path))
 
 (defun organize-imports-java-vc-root-dir ()
   "Return version control root directory."
@@ -177,11 +176,11 @@ IN-SUB-STR : substring to see if contain in the IN-STR.
 IN-STR : string to check by the IN-SUB-STR."
   (string-match-p (regexp-quote in-sub-str) in-str))
 
-(defun organize-imports-java-parse-ini (filePath)
+(defun organize-imports-java-parse-ini (file-path)
   "Parse a .ini file.
 FILEPATH : .ini file to parse."
 
-  (let ((tmp-ini (get-string-from-file filePath))
+  (let ((tmp-ini (get-string-from-file file-path))
         (tmp-ini-list '())
         (tmp-pair-list nil)
         (tmp-keyword "")
@@ -239,12 +238,12 @@ IN-KEY : key to search for value."
     ;; Found nothing, return empty string.
     returns-value))
 
-(defun organize-imports-java-is-in-list-string (inList str)
+(defun organize-imports-java-is-in-list-string (in-list str)
   "Check if a string in the string list.
 INLIST : list of strings.
 STR : string to check if is inside the list of strings above."
   (let ((in-list nil))
-    (dolist (tmp-str inList)
+    (dolist (tmp-str in-list)
       (when (string-match tmp-str str)
         (setq in-list t)))
     (equal in-list t)))
@@ -415,13 +414,12 @@ L : list."
                         (concat (organize-imports-java-vc-root-dir) organize-imports-java-path-config-file)
                         ;; Overwrite?
                         t)))
-    (progn
-      (error "%s"
-             (propertize (concat "Include jar path file missing : "
-                                 (organize-imports-java-vc-root-dir)
-                                 organize-imports-java-lib-inc-file)
-                         'face
-                         '(:foreground "cyan"))))))
+    (error "%s"
+           (propertize (concat "Include jar path file missing : "
+                               (organize-imports-java-vc-root-dir)
+                               organize-imports-java-lib-inc-file)
+                       'face
+                       '(:foreground "cyan")))))
 
 (defun organize-imports-java-get-current-point-face ()
   "Get current point's type face as string."
@@ -430,14 +428,14 @@ L : list."
                   (get-char-property (point) 'face))))
     face))
 
-(defun organize-imports-java-current-point-face-p (faceName)
+(defun organize-imports-java-current-point-face-p (face-name)
   "Is the current face name same as pass in string?
-FACENAME : face name in string."
-  (string= (jcs-get-current-point-face) faceName))
+FACE-NAME : face name in string."
+  (string= (jcs-get-current-point-face) face-name))
 
-(defun organize-imports-java-get-type-face-keywords-by-face-name (faceName)
+(defun organize-imports-java-get-type-face-keywords-by-face-name (face-name)
   "Get all the type keywords in current buffer.
-FACENAME : face name to search."
+FACE-NAME : face name to search."
 
   (let ((tmp-keyword-list '()))
     (save-excursion
@@ -446,7 +444,7 @@ FACENAME : face name to search."
 
       (while (< (point-min) (point))
         (backward-word)
-        (when (organize-imports-java-current-point-face-p faceName)
+        (when (organize-imports-java-current-point-face-p face-name)
           (push (thing-at-point 'word) tmp-keyword-list))))
     ;; Remove duplicate
     (setq tmp-keyword-list (organize-imports-java-strip-duplicates tmp-keyword-list))
@@ -463,12 +461,12 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
 (defun organize-imports-java-kill-whole-line ()
   "Deletes a line, but does not put it in the `kill-ring'."
   (interactive)
-  (if (use-region-p)
-      (delete-region (region-beginning) (region-end))
-    (progn
-      (move-beginning-of-line 1)
-      (kill-line 1)
-      (setq kill-ring (cdr kill-ring)))))
+  (let ((kill-ring))
+    (if (use-region-p)
+        (delete-region (region-beginning) (region-end))
+      (progn
+        (move-beginning-of-line 1)
+        (kill-line 1)))))
 
 ;;;###autoload
 (defun organize-imports-java-clear-all-imports ()
@@ -484,16 +482,7 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
 
 (defun organize-imports-java-is-digit-string (c)
   "Check if C is a digit."
-  (or (string= c "0")
-      (string= c "1")
-      (string= c "2")
-      (string= c "3")
-      (string= c "4")
-      (string= c "5")
-      (string= c "6")
-      (string= c "7")
-      (string= c "8")
-      (string= c "9")))
+  (string-match-p "\^[0-9]'" c))
 
 
 (defvar organize-imports-java-pre-insert-path-list '()

@@ -4352,7 +4352,6 @@ java.awt.Frame
 javax.swing.RootPaneContainer
 javax.swing.WindowConstants
 javax.swing.JFrame
-javax.swingx.JFrame
 java.lang.InterruptedException
 java.awt.MenuContainer
 java.awt.image.ImageObserver
