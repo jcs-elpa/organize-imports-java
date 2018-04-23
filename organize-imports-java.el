@@ -1,14 +1,15 @@
-;;; organize-impots-java.el --- a simple package                     -*- lexical-binding: t; -*-
+;;; organize-imports-java.el --- a simple package                     -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018  Shen, Jen-Chieh
 ;; Created date 2018-04-16 13:12:01
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
+;; Description: Mimic Eclipse C-S-o key. (Organeize Imports)
 ;; Keywords: organize, java, imports, handy
 ;; Version: 0.0.1
+;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
 ;; URL: https://github.com/jcs090218/organize-imports-java
-;; Compatibility: GNU Emacs 22.3 23.x 24.x later
-;;
+
 ;; This file is NOT part of GNU Emacs.
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -25,14 +26,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
 ;;
-;; Organize Imports Java is an organize imports functionalities
-;; plugins for editing Java code.  The only purpose of this
-;; project is to implement the functionalities of how eclipse
-;; treated as C-S-o key.  This plugin only uses elisp without
-;; using any other plugin, so it make this plugin more portable
-;; and light weight.
+;; Mimic Eclipse's Organize Imports functionality.
 ;;
 ;; (@* "TODO" )
 ;; * Performance is terrible when loading all the jar files to path.
@@ -41,8 +36,6 @@
 ;;
 
 ;;; Code:
-
-(require 'cl-lib)
 
 (defvar organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
   "Java SDK Path.")
@@ -93,11 +86,11 @@
 IN-LIST : list of string use to check if INSTR in contain one of
 the string.
 IN-STR : string using to check if is contain one of the INLIST."
-  (let ((tmp-found nil))
+  (let ((found nil))
     (dolist (tmp-str in-list)
       (when (organize-imports-java-contain-string tmp-str in-str)
-        (setq tmp-found t)))
-    (equal tmp-found t)))
+        (setq found t)))
+    (equal found t)))
 
 ;;;###autoload
 (defun organize-imports-java-keep-one-line-between ()
@@ -118,7 +111,7 @@ If you want to keep more than one line use
 
 (defun organize-imports-java-get-string-from-file (file-path)
   "Return file-path's file content.
-FILEPATH : file path."
+FILE-PATH : file path."
   (with-temp-buffer
     (insert-file-contents file-path)
     (buffer-string)))
@@ -131,7 +124,7 @@ FILEPATH : file path."
   "Return `True' if the directory/file exists.
 Return `False' if the directory/file not exists.
 
-FILEPATH : directory/file path."
+FILE-PATH : directory/file path."
   (equal (file-directory-p file-path) t))
 
 (defun organize-imports-java-is-vc-dir-p (dir-path)
@@ -178,7 +171,7 @@ IN-STR : string to check by the IN-SUB-STR."
 
 (defun organize-imports-java-parse-ini (file-path)
   "Parse a .ini file.
-FILEPATH : .ini file to parse."
+FILE-PATH : .ini file to parse."
 
   (let ((tmp-ini (get-string-from-file file-path))
         (tmp-ini-list '())
@@ -240,13 +233,13 @@ IN-KEY : key to search for value."
 
 (defun organize-imports-java-is-in-list-string (in-list str)
   "Check if a string in the string list.
-INLIST : list of strings.
+IN-LIST : list of strings.
 STR : string to check if is inside the list of strings above."
-  (let ((in-list nil))
+  (let ((in-list-check nil))
     (dolist (tmp-str in-list)
       (when (string-match tmp-str str)
-        (setq in-list t)))
-    (equal in-list t)))
+        (setq in-list-check t)))
+    (equal in-list-check t)))
 
 (defun organize-imports-java-re-seq (regexp string)
   "Get a list of all regexp match in a string.
