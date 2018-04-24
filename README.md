@@ -7,6 +7,14 @@ This plugin only uses elisp without using any other plugin, so it
 make this plugin more portable and light weight.
 <br/><br/>
 
+## How to use this package? ##
+1. Create oij.ini file at the version control root directory.
+The example can be find below INI Example section.
+2. After you have include all the Java Libraries into oij.ini
+file. You can either run 'organize-imports-java-do-imports'
+to load the path and do the import in current buffer or just do
+the loading process with 'organize-imports-java-reload-paths'.
+
 ## Configuration ##
 Setup Java JDK.
 ```
@@ -33,17 +41,18 @@ buffer/file.
 ```
 
 ## INI Example ##
+This is an example of oij.ini file. Include all the java library
+path so this plugin can search for all the paths inside this jars
+files you include in this file.
 ```
 #
 # Include Java .jar file paths.
 #
-# THIS IS A TEST .OIJ FILE.
-#
 
-# Using JavaSE-1.7 Environment.
+# Use JavaSE-1.7 Environment.
 rt=::SDK_PATH::/jre/lib/rt.jar
 
-# Libraries
+# External Libraries
 JCSQtJ-1.0.2=./test_lib/JCSQtJ-1.0.2.jar
 qtjambi-4.8.7=./test_lib/qtjambi-4.8.7.jar
 
