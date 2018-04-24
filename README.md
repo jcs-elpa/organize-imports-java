@@ -11,9 +11,11 @@ make this plugin more portable and light weight.
 1. Create oij.ini file at the version control root directory.
 The example can be find below INI Example section.
 2. After you have include all the Java Libraries into oij.ini
-file. You can either run 'organize-imports-java-do-imports'
-to load the path and do the import in current buffer or just do
-the loading process with 'organize-imports-java-reload-paths'.
+file. You can just run `organize-imports-java-do-imports` and
+it will load the included jar path in oij.ini file and do
+the import in the current buffer. Just to let you know, it will
+take a while lodaing all the jar/lib files the first time to
+create the cache file.
 
 ## Configuration ##
 Setup Java JDK.
