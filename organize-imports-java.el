@@ -568,7 +568,7 @@ TYPE : path string will be store at."
             (setq organize-imports-java-same-class-name-list '())))
 
         ;; Remove duplicate for pre insert list.
-        (setq organize-imports-java-pre-insert-path-list (remove-duplicates organize-imports-java-pre-insert-path-list))
+        (setq organize-imports-java-pre-insert-path-list (organize-imports-java-strip-duplicates organize-imports-java-pre-insert-path-list))
 
         ;; Sort in alphabetic order.
         (setq organize-imports-java-pre-insert-path-list (sort organize-imports-java-pre-insert-path-list 'string<))
