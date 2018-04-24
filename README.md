@@ -7,7 +7,7 @@ This plugin only uses elisp without using any other plugin, so it
 make this plugin more portable and light weight.
 <br/><br/>
 
-## How to use this package? ##
+## How to use? ##
 1. Create oij.ini file at the version control root directory.
 The example can be find below INI Example section.
 2. After you have include all the Java Libraries into oij.ini
