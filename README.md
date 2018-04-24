@@ -7,6 +7,7 @@ This plugin only uses elisp without using any other plugin, so it
 make this plugin more portable and light weight.
 <br/><br/>
 
+
 ## How to use? ##
 1. Create oij.ini file at the version control root directory.
 The example can be find below INI Example section.
@@ -16,6 +17,26 @@ it will load the included jar path in oij.ini file and do
 the import in the current buffer. Just to let you know, it will
 take a while lodaing all the jar/lib files the first time to
 create the cache file.
+
+
+## INI Example ##
+This is an example of oij.ini file. Include all the java library
+path so this plugin can search for all the paths inside this jars
+files you include in this file.
+```
+#
+# Include Java .jar file paths.
+#
+
+# Use JavaSE-1.7 Environment.
+rt=::SDK_PATH::/jre/lib/rt.jar
+
+# External Libraries
+JCSQtJ-1.0.2=./test_lib/JCSQtJ-1.0.2.jar
+qtjambi-4.8.7=./test_lib/qtjambi-4.8.7.jar
+
+```
+
 
 ## Configuration ##
 Setup Java JDK.
@@ -40,24 +61,6 @@ buffer/file.
 ```
 ;; If you want, you can just bind the key to the function directly.
 (define-key java-mode-map (kbd "C-S-o") 'organize-imports-java-do-imports)
-```
-
-## INI Example ##
-This is an example of oij.ini file. Include all the java library
-path so this plugin can search for all the paths inside this jars
-files you include in this file.
-```
-#
-# Include Java .jar file paths.
-#
-
-# Use JavaSE-1.7 Environment.
-rt=::SDK_PATH::/jre/lib/rt.jar
-
-# External Libraries
-JCSQtJ-1.0.2=./test_lib/JCSQtJ-1.0.2.jar
-qtjambi-4.8.7=./test_lib/qtjambi-4.8.7.jar
-
 ```
 
 
