@@ -86,7 +86,8 @@
   "Check if a string contain in any string in the string list.
 IN-LIST : list of string use to check if INSTR in contain one of
 the string.
-IN-STR : string using to check if is contain one of the INLIST."
+IN-STR : string using to check if is contain one of the IN-LIST.
+\n(fn IN-LIST IN-STR)"
   (let ((found nil))
     (dolist (tmp-str in-list)
       (when (organize-imports-java-contain-string tmp-str in-str)
@@ -567,7 +568,7 @@ TYPE : path string will be store at."
             (setq organize-imports-java-same-class-name-list '())))
 
         ;; Remove duplicate for pre insert list.
-        (setq organize-imports-java-pre-insert-path-list (organize-imports-java-strip-duplicates organize-imports-java-pre-insert-path-list))
+        (setq organize-imports-java-pre-insert-path-list (remove-duplicates organize-imports-java-pre-insert-path-list))
 
         ;; Sort in alphabetic order.
         (setq organize-imports-java-pre-insert-path-list (sort organize-imports-java-pre-insert-path-list 'string<))
@@ -575,7 +576,8 @@ TYPE : path string will be store at."
         ;; Check package keyword exists.
         (goto-char (point-min))
 
-        ;; Make it under `package' line.
+        ;; Make it under `package' line. Otherwise, will just
+        ;; insert at the very top of the file.
         (when (string= (thing-at-point 'word) "package")
           (end-of-line)
           (insert "\n"))
