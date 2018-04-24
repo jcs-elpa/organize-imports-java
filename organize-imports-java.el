@@ -5,7 +5,7 @@
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Mimic Eclipse C-S-o key. (Organeize Imports)
-;; Keywords: organize, java, imports, handy
+;; Keyword: organize imports java handy eclipse
 ;; Version: 0.0.1
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
 ;; URL: https://github.com/jcs090218/organize-imports-java
@@ -63,12 +63,13 @@
   "Regular Expression to search for java path.")
 
 (defvar organize-imports-java-unsearch-class-type '("[Bb]oolean"
-                                                    "Double"
-                                                    "Float"
-                                                    "Integer"
-                                                    "Long"
+                                                    "[Dd]ouble"
+                                                    "[Ff]loat"
+                                                    "[Ii]nteger"
+                                                    "int"
+                                                    "[Ll]ong"
                                                     "[Ss]tring"
-                                                    "Short"
+                                                    "[Ss]hort"
                                                     "[Vv]oid")
   "Class types that do not need to imports any library path.")
 
