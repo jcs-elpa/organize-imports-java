@@ -63,6 +63,9 @@
   "Regular Expression to search for java path.")
 
 (defvar organize-imports-java-unsearch-class-type '("[Bb]oolean"
+                                                    "[Bb]yte"
+                                                    "Character"
+                                                    "char"
                                                     "[Dd]ouble"
                                                     "[Ff]loat"
                                                     "[Ii]nteger"
@@ -86,13 +89,15 @@
   "Check if a string contain in any string in the string list.
 IN-LIST : list of string use to check if INSTR in contain one of
 the string.
-IN-STR : string using to check if is contain one of the IN-LIST.
-\n(fn IN-LIST IN-STR)"
-  (let ((found nil))
-    (dolist (tmp-str in-list)
-      (when (organize-imports-java-contain-string tmp-str in-str)
-        (setq found t)))
-    (equal found t)))
+IN-STR : string using to check if is contain one of the IN-LIST."
+  (cl-some #'(lambda (lb-sub-str) (string-match-p (regexp-quote lb-sub-str) in-str)) in-list))
+
+(defun organize-imports-java-contain-string (in-sub-str in-str)
+  "Check if a string is a substring of another string.
+Return true if contain, else return false.
+IN-SUB-STR : substring to see if contain in the IN-STR.
+IN-STR : string to check by the IN-SUB-STR."
+  (string-match-p (regexp-quote in-sub-str) in-str))
 
 ;;;###autoload
 (defun organize-imports-java-keep-one-line-between ()
@@ -163,13 +168,6 @@ DIR-PATH : directory path."
     ;; NOTE(jenchieh): if you do not like `/' at the end remove
     ;; concat slash function.
     (concat tmp-result-dir "/")))
-
-(defun organize-imports-java-contain-string (in-sub-str in-str)
-  "Check if a string is a substring of another string.
-Return true if contain, else return false.
-IN-SUB-STR : substring to see if contain in the IN-STR.
-IN-STR : string to check by the IN-SUB-STR."
-  (string-match-p (regexp-quote in-sub-str) in-str))
 
 (defun organize-imports-java-parse-ini (file-path)
   "Parse a .ini file.
@@ -270,7 +268,7 @@ LIST : list you want to remove duplicates."
   "Flatten the multiple dimensional array to one dimensonal array.
 '(1 2 3 4 (5 6 7 8)) => '(1 2 3 4 5 6 7 8).
 
-L : list."
+L : list we want to flaaten."
   (cond ((null l) nil)
         ((atom l) (list l))
         (t (loop for a in l appending (organize-imports-java-flatten a)))))
