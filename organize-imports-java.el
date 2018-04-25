@@ -37,6 +37,9 @@
 
 ;;; Code:
 
+(require 'cl-extra)
+
+
 (defvar organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
   "Java SDK Path.")
 
