@@ -114,7 +114,7 @@ If you want to keep more than one line use
 
         ;; Kill empty line until there is one line.
         (while (current-line-empty-p)
-          (jcs-kill-whole-line)))
+          (organize-imports-java-kill-whole-line)))
     (progn
       ;; Make sure have one empty line between.
       (insert "\n"))))
@@ -427,7 +427,7 @@ L : list we want to flaaten."
 (defun organize-imports-java-current-point-face-p (face-name)
   "Is the current face name same as pass in string?
 FACE-NAME : face name in string."
-  (string= (jcs-get-current-point-face) face-name))
+  (string= (organize-imports-java-get-current-point-face) face-name))
 
 (defun organize-imports-java-get-type-face-keywords-by-face-name (face-name)
   "Get all the type keywords in current buffer.
@@ -474,7 +474,7 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
       (beginning-of-line)
       (when (string= (thing-at-point 'word) "import")
         (organize-imports-java-kill-whole-line))
-      (jcs-previous-line))))
+      (forward-line -1))))
 
 (defun organize-imports-java-is-digit-string (c)
   "Check if C is a digit."
