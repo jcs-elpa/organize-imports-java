@@ -545,7 +545,6 @@ TYPE : path string will be store at."
             ;; Read file to buffer.
             (tmp-path-buffer (organize-imports-java-get-string-from-file tmp-config-fullpath))
             (tmp-path-list '())
-            (tmp-one-path "")
             ;; Loop the data once and split into alphabetic order.
             ;; List-Len = (Alphabet Id - 1).
             ;; 0 = A, 1 = B, 2 = C, etc.
