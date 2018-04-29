@@ -17,7 +17,7 @@ it will load the included jar path in oij.ini file and do
 the import in the current buffer. Just to let you know, it will
 take a while lodaing all the jar/lib files the first time to
 create the cache file. If you wish to refresh the paths-config.oij
-file then just call `organize-imports-java-reload-paths' function
+file then just call `organize-imports-java-reload-paths` function
 then it will do the work.
 
 
