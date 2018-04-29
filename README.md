@@ -16,7 +16,9 @@ file. You can just run `organize-imports-java-do-imports` and
 it will load the included jar path in oij.ini file and do
 the import in the current buffer. Just to let you know, it will
 take a while lodaing all the jar/lib files the first time to
-create the cache file.
+create the cache file. If you wish to refresh the paths-config.oij
+file then just call `organize-imports-java-reload-paths' function
+then it will do the work.
 
 
 ## INI Example ##
@@ -58,9 +60,16 @@ buffer/file.
 ```
 
 ## Key Bindings ##
+If you want, you can just bind the key to the function directly.
 ```
-;; If you want, you can just bind the key to the function directly.
+;; Do the import, if could not find paths-config.oij file then it will
+;; reload the paths once.
 (define-key java-mode-map (kbd "C-S-o") 'organize-imports-java-do-imports)
+
+;; You can either delete paths-config.oij file at the version control root
+;; directory or just call this function. Both will trigger the reloading
+;; path functionality.
+(define-key java-mode-map (kbd "C-S-o") 'organize-imports-java-reload-paths)
 ```
 
 
