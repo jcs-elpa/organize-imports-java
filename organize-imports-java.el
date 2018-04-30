@@ -581,7 +581,7 @@ TYPE : path string will be store at."
             ;; the last element is usually the class name.
             (setq tmp-last-element (nth (1- (length tmp-split-path-list)) tmp-split-path-list))
 
-            (unless (string= tmp-last-element "")
+            (when (not (string= tmp-last-element ""))
               ;; Get the first character from class name, in order
               ;; to sort in alphabetic order.
               (setq first-char-from-path (substring tmp-last-element 0 1))
@@ -589,7 +589,7 @@ TYPE : path string will be store at."
               ;; get the alphabet id, which is the same as array id.
               (setq alphabet-id (organize-imports-java-get-alphabet-id first-char-from-path))
 
-              (unless (= alphabet-id -1)
+              (when (not (= alphabet-id -1))
                 ;; get the current alphabet list.
                 (setf alphabet-list (nth alphabet-id alphabet-list-first))
 
@@ -606,8 +606,8 @@ TYPE : path string will be store at."
         (let ((tmp-same-class-name-list-length -1))
           (dolist (tmp-type-class-keyword tmp-type-keyword-list)
             ;; Exclude the general data type. (String, Integer, etc.)
-            (unless (organize-imports-java-is-in-list-string organize-imports-java-unsearch-class-type
-                                                             tmp-type-class-keyword)
+            (when (not (organize-imports-java-is-in-list-string organize-imports-java-unsearch-class-type
+                                                                tmp-type-class-keyword))
               (let (;; Choose one list from `alphabet-list-first',
                     ;; depends on alphabet id.
                     (alphabet-list nil)
