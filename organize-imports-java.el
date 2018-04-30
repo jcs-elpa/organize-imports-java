@@ -7,7 +7,7 @@
 ;; Description: Mimic Eclipse C-S-o key. (Organeize Imports)
 ;; Keyword: organize imports java handy eclipse
 ;; Version: 0.0.1
-;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
+;; Package-Requires: ((cl-lib "0.5") (emacs "24") (s "1.12.0"))
 ;; URL: https://github.com/jcs090218/organize-imports-java
 
 ;; This file is NOT part of GNU Emacs.
@@ -38,6 +38,7 @@
 ;;; Code:
 
 (require 'cl-extra)
+(require 's)
 
 
 (defvar organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
@@ -140,17 +141,24 @@ STR : string to check if is inside the list of strings above."
   (cl-some #'(lambda (lb-sub-str) (string-match lb-sub-str str)) in-list))
 
 ;;;###autoload
+(defun organize-imports-java-current-line-empty-p ()
+  "Current line empty, but accept spaces/tabs in there.  (not absolute)."
+  (save-excursion
+    (beginning-of-line)
+    (looking-at "[[:space:]\t]*$")))
+
+;;;###autoload
 (defun organize-imports-java-keep-one-line-between ()
   "Keep one line between the two line of code.
 If you want to keep more than one line use
 `organize-imports-java-keep-n-line-between' instead."
   (interactive)
-  (if (current-line-empty-p)
+  (if (organize-imports-java-current-line-empty-p)
       (progn
         (forward-line 1)
 
         ;; Kill empty line until there is one line.
-        (while (current-line-empty-p)
+        (while (organize-imports-java-current-line-empty-p)
           (organize-imports-java-kill-whole-line)))
     (progn
       ;; Make sure have one empty line between.
@@ -213,7 +221,7 @@ DIR-PATH : directory path."
   "Parse a .ini file.
 FILE-PATH : .ini file to parse."
 
-  (let ((tmp-ini (get-string-from-file file-path))
+  (let ((tmp-ini (organize-imports-java-get-string-from-file file-path))
         (tmp-ini-list '())
         (tmp-pair-list nil)
         (tmp-keyword "")
