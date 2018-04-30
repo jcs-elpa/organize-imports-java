@@ -191,8 +191,8 @@ DIR-PATH : directory path."
   "Go up one directory and return it directory string.
 DIR-PATH : directory path."
   ;; Remove the last directory in the path.
-  (string-match "\\(.*\\)/" dir-path)
-  (match-string 1 dir-path))
+  (when (string-match "\\(.*\\)/" dir-path)
+    (match-string 1 dir-path)))
 
 (defun organize-imports-java-vc-root-dir ()
   "Return version control root directory."
@@ -284,16 +284,6 @@ STRING : string to do searching."
         (push (match-string 0 string) matches)
         (setq pos (match-end 0)))
       matches)))
-
-(defun organize-imports-java-strip-duplicates (list)
-  "Remove duplicate value from list.
-LIST : list you want to remove duplicates."
-  (let ((new-list nil))
-    (while list
-      (when (and (car list) (not (member (car list) new-list)))
-        (setq new-list (cons (car list) new-list)))
-      (setq list (cdr list)))
-    (nreverse new-list)))
 
 (defun organize-imports-java-flatten (l)
   "Flatten the multiple dimensional array to one dimensonal array.
@@ -400,7 +390,7 @@ L : list we want to flaaten."
 
         ;; Remove duplicates value from list.
         (setq organize-imports-java-path-buffer
-              (organize-imports-java-strip-duplicates organize-imports-java-path-buffer))
+              (delete-dups organize-imports-java-path-buffer))
 
         ;; Erase buffer before inserting.
         (organize-imports-java-erase-config-file)
@@ -471,7 +461,7 @@ FACE-NAME : face name to search."
         (when (organize-imports-java-current-point-face-p face-name)
           (push (thing-at-point 'word) tmp-keyword-list))))
     ;; Remove duplicate
-    (setq tmp-keyword-list (organize-imports-java-strip-duplicates tmp-keyword-list))
+    (setq tmp-keyword-list (delete-dups tmp-keyword-list))
     tmp-keyword-list))
 
 (defun organize-imports-java-insert-import-lib (tmp-one-path)
@@ -649,7 +639,7 @@ TYPE : path string will be store at."
 
               ;; ------------------------------------------------------------------------------
               ;; Remove duplicate.
-              (setq organize-imports-java-same-class-name-list (organize-imports-java-strip-duplicates organize-imports-java-same-class-name-list))
+              (setq organize-imports-java-same-class-name-list (delete-dups organize-imports-java-same-class-name-list))
 
               ;; Get the length of the check same class list.
               (setq tmp-same-class-name-list-length (length organize-imports-java-same-class-name-list))
@@ -670,7 +660,7 @@ TYPE : path string will be store at."
               (setq organize-imports-java-same-class-name-list '()))))
 
         ;; Remove duplicate for pre insert list.
-        (setq organize-imports-java-pre-insert-path-list (organize-imports-java-strip-duplicates organize-imports-java-pre-insert-path-list))
+        (setq organize-imports-java-pre-insert-path-list (delete-dups organize-imports-java-pre-insert-path-list))
 
         ;; Sort in alphabetic order.
         (setq organize-imports-java-pre-insert-path-list (sort organize-imports-java-pre-insert-path-list
