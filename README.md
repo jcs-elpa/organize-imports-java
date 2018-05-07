@@ -1,30 +1,27 @@
 # organize-imports-java #
 
-Organize Imports Java is an organize imports functionalities plugins
-for editing Java code. The only purpose of this project is to
-implement the functionalities of how eclipse treated as C-S-o key.
-This plugin only uses elisp without using any other plugin, so it
-make this plugin more portable and light weight.
+Organize Imports Java is an organize import functionality plugin for 
+editing Java code. This plugin mimics eclipses use of the C-S-o Key. 
+And it only uses elisp, making it more portable and light weight.
 <br/><br/>
 
 
 ## How to use? ##
-1. Create oij.ini file at the version control root directory.
-The example can be find below INI Example section.
-2. After you have include all the Java Libraries into oij.ini
-file. You can just run `organize-imports-java-do-imports` and
-it will load the included jar path in oij.ini file and do
-the import in the current buffer. Just to let you know, it will
-take a while lodaing all the jar/lib files the first time to
-create the cache file. If you wish to refresh the paths-config.oij
-file then just call `organize-imports-java-reload-paths` function
-then it will do the work.
+1. Create an oij.ini file at the version control root directory. 
+An example can be found below in the “INI Example” section.
+2. After you have included all the Java Libraries into the oij.ini 
+file. You can run `organize-imports-java-do-imports` and it will load 
+the included jar path in the oij.ini file and import in the current 
+buffer (It will take a while loading all the jar/lib files the first 
+time to create the cache file). If you wish to refresh the 
+paths-config.oij file then just call `organize-imports-java-reload-paths` 
+function, and it will do the work.
 
 
 ## INI Example ##
-This is an example of oij.ini file. Include all the java library
-path so this plugin can search for all the paths inside this jars
-files you include in this file.
+This is an example of oij.ini file. It Includes all the java 
+library paths. This plugin can search for all the paths inside 
+this jars files you include in this file.
 ```
 #
 # Include Java .jar file paths.
