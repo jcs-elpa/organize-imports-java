@@ -1,7 +1,7 @@
 # organize-imports-java #
 
 Organize Imports Java is an organize import functionality plugin for 
-editing Java code. This plugin mimics eclipses use of the C-S-o Key. 
+editing Java code. This plugin mimics Eclipse uses of the C-S-o key. 
 And it only uses elisp, making it more portable and light weight.
 <br/><br/>
 
