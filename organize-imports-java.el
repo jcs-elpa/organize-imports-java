@@ -53,6 +53,9 @@
 (defvar organize-imports-java-path-config-file "paths-config.oij"
   "File generate store all the Java paths.")
 
+(defvar organize-imports-java-font-lock-type-faces '("font-lock-type-face")
+  "List of type font face that current Jave mode applied to use.")
+
 (defvar organize-imports-java-vc-list '(".bzr"
                                         ".cvs"
                                         ".git"
@@ -84,9 +87,6 @@
                                              "internal"
                                              "sun")
   "List of non Java source keywords.")
-
-(defvar organize-imports-java-font-lock-type-face '("font-lock-type-face")
-  "List of type face that current Jave mode applied to use.")
 
 
 (defun organize-imports-java-get-alphabet-id (c)
@@ -539,7 +539,7 @@ TYPE : path string will be store at."
         (organize-imports-java-reload-paths))
 
       (let ((tmp-type-keyword-list (organize-imports-java-get-type-face-keywords-by-face-name
-                                    organize-imports-java-font-lock-type-face))
+                                    organize-imports-java-font-lock-type-faces))
             ;; Read file to buffer.
             (tmp-path-buffer (organize-imports-java-get-string-from-file tmp-config-fullpath))
             (tmp-path-list '())
