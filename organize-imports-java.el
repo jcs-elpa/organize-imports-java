@@ -85,8 +85,8 @@
                                              "sun")
   "List of non Java source keywords.")
 
-(defvar organize-imports-java-font-lock-type-face "font-lock-type-face"
-  "Type face that Jave applied to use.")
+(defvar organize-imports-java-font-lock-type-face '("font-lock-type-face")
+  "List of type face that current Jave mode applied to use.")
 
 
 (defun organize-imports-java-get-alphabet-id (c)
@@ -122,7 +122,7 @@ C : character to find the alphabet id."
 
 (defun organize-imports-java-is-contain-list-string (in-list in-str)
   "Check if a string contain in any string in the string list.
-IN-LIST : list of string use to check if INSTR in contain one of
+IN-LIST : list of string use to check if IN-STR in contain one of
 the string.
 IN-STR : string using to check if is contain one of the IN-LIST."
   (cl-some #'(lambda (lb-sub-str) (string-match-p (regexp-quote lb-sub-str) in-str)) in-list))
@@ -443,21 +443,21 @@ L : list we want to flaaten."
                        'face
                        '(:foreground "cyan")))))
 
-(defun organize-imports-java-get-current-point-face ()
+(defun organize-imports-java-get-current-point-face-p ()
   "Get current point's type face as string."
   (interactive)
   (let ((face (or (get-char-property (point) 'read-face-name)
                   (get-char-property (point) 'face))))
     face))
 
-(defun organize-imports-java-current-point-face-p (face-name)
-  "Is the current face name same as pass in string?
-FACE-NAME : face name in string."
-  (string= (organize-imports-java-get-current-point-face) face-name))
+(defun organize-imports-java-current-point-face-list-p (face-name-list)
+  "Is the current face name same as one of the pass in string in the list?
+FACE-NAME-LIST : list of face name in string."
+  (cl-some #'(lambda (face-name) (string= (organize-imports-java-get-current-point-face-p) face-name)) face-name-list))
 
-(defun organize-imports-java-get-type-face-keywords-by-face-name (face-name)
+(defun organize-imports-java-get-type-face-keywords-by-face-name (face-name-list)
   "Get all the type keywords in current buffer.
-FACE-NAME : face name to search."
+FACE-NAME-LIST : face name to search."
 
   (let ((tmp-keyword-list '()))
     (save-excursion
@@ -465,8 +465,8 @@ FACE-NAME : face name to search."
       (goto-char (point-max))
 
       (while (< (point-min) (point))
-        (backward-word)
-        (when (organize-imports-java-current-point-face-p face-name)
+        (backward-word 1)
+        (when (organize-imports-java-current-point-face-list-p face-name-list)
           (push (thing-at-point 'word) tmp-keyword-list))))
     ;; Remove duplicate
     (setq tmp-keyword-list (delete-dups tmp-keyword-list))
