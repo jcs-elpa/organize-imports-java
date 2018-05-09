@@ -56,6 +56,14 @@ buffer/file.
 (setq organize-impots-java-path-config-file "paths-config.oij")
 ```
 
+This plugin detect each word's font face in the current buffer to find 
+which word is the class keyword to import. By setting this variable 
+can add/remove the list of font face you want this plugin to detect 
+the class type.
+```
+(setq organize-imports-java-font-lock-type-face '("font-lock-type-face"))
+```
+
 ## Key Bindings ##
 If you want, you can just bind the key to the function directly.
 ```
