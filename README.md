@@ -69,12 +69,12 @@ If you want, you can just bind the key to the function directly.
 ```
 ;; Do the import, if could not find paths-config.oij file then it will
 ;; reload the paths once.
-(define-key java-mode-map (kbd "C-S-o") 'organize-imports-java-do-imports)
+(define-key java-mode-map (kbd "C-S-o") #'organize-imports-java-do-imports)
 
 ;; You can either delete paths-config.oij file at the version control root
 ;; directory or just call this function. Both will trigger the reloading
 ;; path functionality.
-(define-key java-mode-map (kbd "C-S-o") 'organize-imports-java-reload-paths)
+(define-key java-mode-map (kbd "C-S-o") #'organize-imports-java-reload-paths)
 ```
 
 
