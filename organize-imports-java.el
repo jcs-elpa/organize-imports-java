@@ -1,4 +1,4 @@
-;;; organize-imports-java.el --- a simple package                     -*- lexical-binding: t; -*-
+;;; organize-imports-java.el --- Mimic Eclipse's Organize Imports functionality.                     -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018  Shen, Jen-Chieh
 ;; Created date 2018-04-16 13:12:01
@@ -7,7 +7,7 @@
 ;; Description: Mimic Eclipse C-S-o key. (Organeize Imports)
 ;; Keyword: organize imports java handy eclipse
 ;; Version: 0.0.1
-;; Package-Requires: ((cl-lib "0.5") (emacs "24") (s "1.12.0"))
+;; Package-Requires: ((emacs "24") (s "1.12.0"))
 ;; URL: https://github.com/jcs090218/organize-imports-java
 
 ;; This file is NOT part of GNU Emacs.
@@ -37,51 +37,62 @@
 
 ;;; Code:
 
-(require 'cl-extra)
 (require 's)
 
 
-(defvar organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
-  "Java SDK Path.")
+(defgroup organize-imports-java nil
+  "Organize imports java extension"
+  :prefix "organize-imports-java-"
+  :group 'editing
+  :link '(url-link :tag "Repository" "https://github.com/jcs090218/organize-imports-java.git"))
 
-(defvar organize-imports-java-inc-keyword "::SDK_PATH::"
-  "Java SDK Path.")
 
-(defvar organize-imports-java-lib-inc-file "oij.ini"
-  "Java library include config file.")
+(defcustom organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
+  "Java SDK Path."
+  :type 'string
+  :group 'organize-imports-java)
 
-(defvar organize-imports-java-path-config-file "paths-config.oij"
-  "File generate store all the Java paths.")
+(defcustom organize-imports-java-inc-keyword "::SDK_PATH::"
+  "Java SDK Path."
+  :type 'string
+  :group 'organize-imports-java)
 
-(defvar organize-imports-java-font-lock-type-faces '("font-lock-type-face")
-  "List of type font face that current Jave mode applied to use.")
+(defcustom organize-imports-java-lib-inc-file "oij.ini"
+  "Java library include config file."
+  :type 'string
+  :group 'organize-imports-java)
 
-(defvar organize-imports-java-vc-list '(".bzr"
-                                        ".cvs"
-                                        ".git"
-                                        ".hg"
-                                        ".svn")
-  "Version Control list.")
+(defcustom organize-imports-java-path-config-file "paths-config.oij"
+  "File generate store all the Java paths."
+  :type 'string
+  :group 'organize-imports-java)
+
+(defcustom organize-imports-java-font-lock-type-faces '("font-lock-type-face")
+  "List of type font face that current Jave mode applied to use."
+  :type 'list
+  :group 'organize-imports-java)
+
+(defcustom organize-imports-java-unsearch-class-type '("[Bb]oolean"
+                                                       "[Bb]yte"
+                                                       "Character"
+                                                       "char"
+                                                       "[Dd]ouble"
+                                                       "[Ff]loat"
+                                                       "[Ii]nteger"
+                                                       "int"
+                                                       "[Ll]ong"
+                                                       "[Ss]tring"
+                                                       "[Ss]hort"
+                                                       "[Vv]oid")
+  "Class types that do not need to imports any library path."
+  :type 'list
+  :group 'organize-imports-java)
 
 (defvar organize-imports-java-path-buffer '()
   "All the available java paths store here.")
 
 (defvar organize-imports-java-serach-regexp "[a-zA-Z0-9/_-]*/[A-Z][a-zA-Z0-9_-]*\\.class"
   "Regular Expression to search for java path.")
-
-(defvar organize-imports-java-unsearch-class-type '("[Bb]oolean"
-                                                    "[Bb]yte"
-                                                    "Character"
-                                                    "char"
-                                                    "[Dd]ouble"
-                                                    "[Ff]loat"
-                                                    "[Ii]nteger"
-                                                    "int"
-                                                    "[Ll]ong"
-                                                    "[Ss]tring"
-                                                    "[Ss]hort"
-                                                    "[Vv]oid")
-  "Class types that do not need to imports any library path.")
 
 (defvar organize-imports-java-non-src-list '("document"
                                              "internal"
@@ -170,52 +181,6 @@ FILE-PATH : file path."
   (with-temp-buffer
     (insert-file-contents file-path)
     (buffer-string)))
-
-(defun organize-imports-java-get-current-dir ()
-  "Return the string of current directory."
-  default-directory)
-
-(defun organize-imports-java-file-directory-exists-p (file-path)
-  "Return `True' if the directory/file exists.
-Return `False' if the directory/file not exists.
-
-FILE-PATH : directory/file path."
-  (equal (file-directory-p file-path) t))
-
-(defun organize-imports-java-is-vc-dir-p (dir-path)
-  "Return `True' is version control diectory.
-Return `False' not a version control directory.
-DIR-PATH : directory path."
-
-  (let ((tmp-is-vc-dir nil))
-    (dolist (tmp-vc-type organize-imports-java-vc-list)
-      (let ((tmp-check-dir (concat dir-path "/" tmp-vc-type)))
-        (when (organize-imports-java-file-directory-exists-p tmp-check-dir)
-          (setq tmp-is-vc-dir t))))
-    ;; Return retult.
-    (equal tmp-is-vc-dir t)))
-
-(defun organize-imports-java-up-one-dir-string (dir-path)
-  "Go up one directory and return it directory string.
-DIR-PATH : directory path."
-  ;; Remove the last directory in the path.
-  (when (string-match "\\(.*\\)/" dir-path)
-    (match-string 1 dir-path)))
-
-(defun organize-imports-java-vc-root-dir ()
-  "Return version control root directory."
-  (let ((tmp-current-dir (organize-imports-java-get-current-dir))
-        (tmp-result-dir ""))
-    (while (organize-imports-java-contain-string "/" tmp-current-dir)
-      (when (organize-imports-java-is-vc-dir-p tmp-current-dir)
-        ;; Return the result, which is the version control path
-        ;; or failed to find the version control path.
-        (setq tmp-result-dir tmp-current-dir))
-      ;; go up one directory.
-      (setq tmp-current-dir (organize-imports-java-up-one-dir-string tmp-current-dir)))
-    ;; NOTE(jenchieh): if you do not like `/' at the end remove
-    ;; concat slash function.
-    (concat tmp-result-dir "/")))
 
 (defun organize-imports-java-parse-ini (file-path)
   "Parse a .ini file.
@@ -309,7 +274,7 @@ L : list we want to flaaten."
   (setq organize-imports-java-path-buffer '())
 
   (let ((tmp-lib-inc-file (concat
-                           (organize-imports-java-vc-root-dir)
+                           (cdr (project-current))
                            organize-imports-java-lib-inc-file))
         (tmp-lib-list '())
         ;; Key read from the .ini/.properties file.
@@ -349,7 +314,7 @@ L : list we want to flaaten."
                (string= first-char-from-path ".")
                (progn
                  ;; Modefied path to version control path.
-                 (setq tmp-lib-path (concat (organize-imports-java-vc-root-dir) tmp-lib-path))))
+                 (setq tmp-lib-path (concat (cdr (project-current)) tmp-lib-path))))
               ;; Swap #SDK_PATH# to valid Java SDK path, if contain.
               ((organize-imports-java-contain-string organize-imports-java-inc-keyword
                                                      tmp-lib-path)
@@ -378,7 +343,7 @@ L : list we want to flaaten."
   (write-region ""  ;; Start, insert nothing here in order to clean it.
                 nil  ;; End
                 ;; File name (concatenate full path)
-                (concat (organize-imports-java-vc-root-dir) organize-imports-java-path-config-file)
+                (concat (cdr (project-current)) organize-imports-java-path-config-file)
                 ;; Overwrite?
                 nil))
 
@@ -387,7 +352,7 @@ L : list we want to flaaten."
   "Reload the Java include paths once."
   (interactive)
   ;; Make sure the .ini/.properties file exists before anything.
-  (if (file-exists-p (concat (organize-imports-java-vc-root-dir) organize-imports-java-lib-inc-file))
+  (if (file-exists-p (concat (cdr (project-current)) organize-imports-java-lib-inc-file))
       (progn
         ;; Import all libs/jars.
         (organize-imports-java-unzip-lib)
@@ -433,12 +398,12 @@ L : list we want to flaaten."
           (write-region tmp-write-to-file-content-buffer  ;; Start
                         nil  ;; End
                         ;; File name (concatenate full path)
-                        (concat (organize-imports-java-vc-root-dir) organize-imports-java-path-config-file)
+                        (concat (cdr (project-current)) organize-imports-java-path-config-file)
                         ;; Overwrite?
                         t)))
     (error "%s"
            (propertize (concat "Include jar path file missing : "
-                               (organize-imports-java-vc-root-dir)
+                               (cdr (project-current))
                                organize-imports-java-lib-inc-file)
                        'face
                        '(:foreground "cyan")))))
@@ -532,7 +497,8 @@ TYPE : path string will be store at."
   (organize-imports-java-clear-all-imports)
 
   (save-excursion
-    (let ((tmp-config-fullpath (concat (organize-imports-java-vc-root-dir) organize-imports-java-path-config-file)))
+    (let ((tmp-config-fullpath (concat (cdr (project-current)) organize-imports-java-path-config-file)))
+
       ;; If the file does not exists, load the Java path once.
       ;; Get this plugin ready to use.
       (when (not (file-exists-p tmp-config-fullpath))
