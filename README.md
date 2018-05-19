@@ -1,26 +1,26 @@
 # organize-imports-java #
 
-Organize Imports Java is an organize import functionality plugin for 
-editing Java code. This plugin mimics Eclipse uses of the C-S-o key. 
+Organize Imports Java is an organize import functionality plugin for
+editing Java code. This plugin mimics Eclipse uses of the C-S-o key.
 And it only uses elisp, making it more portable and light weight.
 <br/><br/>
 
 
 ## How to use? ##
-1. Create an oij.ini file at the version control root directory. 
+1. Create an oij.ini file at the version control root directory.
 An example can be found below in the “INI Example” section.
-2. After you have included all the Java Libraries into the oij.ini 
-file. You can run `organize-imports-java-do-imports` and it will load 
-the included jar path in the oij.ini file and import in the current 
-buffer (It will take a while loading all the jar/lib files the first 
-time to create the cache file). If you wish to refresh the 
-paths-config.oij file then just call `organize-imports-java-reload-paths` 
+2. After you have included all the Java Libraries into the oij.ini
+file. You can run `organize-imports-java-do-imports` and it will load
+the included jar path in the oij.ini file and import in the current
+buffer (It will take a while loading all the jar/lib files the first
+time to create the cache file). If you wish to refresh the
+paths-config.oij file then just call `organize-imports-java-reload-paths`
 function, and it will do the work.
 
 
 ## INI Example ##
-This is an example of oij.ini file. It Includes all the java 
-library paths. This plugin can search for all the paths inside 
+This is an example of oij.ini file. It Includes all the java
+library paths. This plugin can search for all the paths inside
 this jars files you include in this file.
 ```
 #
@@ -56,9 +56,9 @@ buffer/file.
 (setq organize-impots-java-path-config-file "paths-config.oij")
 ```
 
-This plugin detect each word's font face in the current buffer to find 
-which word is the class keyword to import. By setting this variable 
-can add/remove the list of font face you want this plugin to detect 
+This plugin detect each word's font face in the current buffer to find
+which word is the class keyword to import. By setting this variable
+can add/remove the list of font face you want this plugin to detect
 the class type.
 ```
 (setq organize-imports-java-font-lock-type-face '("font-lock-type-face"))
@@ -79,7 +79,7 @@ If you want, you can just bind the key to the function directly.
 
 
 ## Screen Shot ##
-<img src="./screen_shot/orangize_imports_java_demo1.gif"/>
+<img src="./screenshot/orangize_imports_java_demo1.gif"/>
 
 
 ## Some Possible Improvement ##
