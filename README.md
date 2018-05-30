@@ -85,7 +85,6 @@ If you want, you can just bind the key to the function directly.
 ## Some Possible Improvement ##
 * Performance is terrible when loading all the jar files to path.
 Hopefully I can find out a way to get around this issue.
-* Performance imporvement when do imports task.
 
 
 ## Contribution ##
