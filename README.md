@@ -79,7 +79,7 @@ If you want, you can just bind the key to the function directly.
 
 
 ## Screen Shot ##
-<img src="./screenshot/orangize_imports_java_demo1.gif" width="300" height="304"/>
+<img src="./screenshot/orangize_imports_java_demo1.gif" width="450" height="457"/>
 
 
 ## Some Possible Improvement ##
