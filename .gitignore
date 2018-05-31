@@ -15,4 +15,4 @@ TODO(jenchieh).txt
 
 # ignore example/test files.
 oij.ini
-paths-config.oij
+*.oij
