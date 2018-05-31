@@ -53,7 +53,14 @@ After reading all the library path, this file will be generated
 for cache search on what library should be import to current
 buffer/file.
 ```
-(setq organize-impots-java-path-config-file "paths-config.oij")
+(setq organize-imports-java-path-jar-lib-cache-file "paths-cache.oij")
+```
+
+Local source will be loaded automatically after loaded all the external .jar files.
+The local source file will depends on `organize-imports-java-source-dir-name`
+variable path.
+```
+(setq organize-imports-java-path-local-source-cache-file "paths-cache-local.oij")
 ```
 
 This plugin detect each word's font face in the current buffer to find
@@ -64,18 +71,53 @@ the class type.
 (setq organize-imports-java-font-lock-type-face '("font-lock-type-face"))
 ```
 
+For some reason your project source files isn't under `src` folder. You can
+change it by setting this variable.
+```
+(setq organize-imports-java-source-dir-name "src")
+```
+
+If there are something that you do not usually want to import to your buffer,
+you can modified this variable and reload the cache files.
+```
+(setq organize-imports-java-non-class-list '("Callable"
+                                             "Runnable"))
+```
+
+
 ## Key Bindings ##
 If you want, you can just bind the key to the function directly.
 ```
 ;; Do the import, if could not find paths-config.oij file then it will
 ;; reload the paths once.
 (define-key java-mode-map (kbd "C-S-o") #'organize-imports-java-do-imports)
-
-;; You can either delete paths-config.oij file at the version control root
-;; directory or just call this function. Both will trigger the reloading
-;; path functionality.
-(define-key java-mode-map (kbd "C-S-o") #'organize-imports-java-reload-paths)
 ```
+
+## Functions ##
+
+Reload both local source and jar/lib Java path once. This will overwrite
+all the cache file and this call might take a while to complete.
+```
+#'organize-imports-java-reload-paths
+```
+
+Just reload the jar/lib Java path once. This should take a while because Java
+API is HUGE!
+```
+#'organize-imports-java-reload-jar-lib-paths
+```
+
+Just reload the local source Java path once. The time consume should just
+depends on how large is your current project.
+```
+#'organize-imports-java-reload-local-source-paths
+```
+
+## Tips ##
+* You can just delete either `organize-imports-java-path-jar-lib-cache-file`
+or `organize-imports-java-path-local-source-cache-file` cache file in order
+to refresh the cache, the cache file will be regenerated as long as you call any
+reload paths function or do import function.
 
 
 ## Comparison ##
