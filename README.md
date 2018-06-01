@@ -118,6 +118,8 @@ depends on how large is your current project.
 or `organize-imports-java-path-local-source-cache-file` cache file in order
 to refresh the cache, the cache file will be regenerated as long as you call any
 reload paths function or do import function.
+* You might want to reload local source cache every time you create a new 
+.java file in your local source directory.
 
 
 ## Comparison ##
