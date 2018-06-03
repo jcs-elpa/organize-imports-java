@@ -14,5 +14,5 @@ Update_Log.txt
 TODO(jenchieh).txt
 
 # ignore example/test files.
-oij.ini
+oij.config
 *.oij
