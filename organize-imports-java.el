@@ -782,7 +782,6 @@ IN-CACHE : cache file name relative to project root folder."
 (defun organize-imports-java-do-imports ()
   "Do the functionalitiies of how organize imports work."
   (interactive)
-
   ;; Clear all imports before insert new imports.
   (organize-imports-java-clear-all-imports)
 
