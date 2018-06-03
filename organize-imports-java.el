@@ -58,7 +58,7 @@
   :type 'string
   :group 'organize-imports-java)
 
-(defcustom organize-imports-java-lib-inc-file "oij.ini"
+(defcustom organize-imports-java-lib-inc-file "oij.config"
   "Java library include config file."
   :type 'string
   :group 'organize-imports-java)
@@ -583,7 +583,7 @@ TYPE : path string will be store at."
 IN-CACHE : cache file name relative to project root folder."
   (save-excursion
     (let ((tmp-config-fullpath (concat (cdr (project-current))
-                                               in-cache)))
+                                       in-cache)))
       ;; If the file does not exists, load the Java path once.
       ;; Get this plugin ready to use.
       (when (not (file-exists-p tmp-config-fullpath))
