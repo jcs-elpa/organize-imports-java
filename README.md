@@ -7,19 +7,19 @@ And it only uses elisp, making it more portable and light weight.
 
 
 ## How to use? ##
-1. Create an `oij.ini` file at the version control root directory.
+1. Create an `oij.config` file at the version control root directory.
 An example can be found below in the “INI Example” section.
-2. After you have included all the Java Libraries into the `oij.ini`
+2. After you have included all the Java Libraries into the `oij.config`
 file. You can run `organize-imports-java-do-imports` and it will load
-the included jar path in the `oij.ini` file and import in the current
+the included jar path in the `oij.config` file and import in the current
 buffer (It will take a while loading all the jar/lib files the first
 time to create the cache file). If you wish to refresh the
 paths-config.oij file then just call `organize-imports-java-reload-paths`
 function, and it will do the work.
 
 
-## INI Example ##
-This is an example of `oij.ini` file. It Includes all the java
+## Config Example ##
+This is an example of `oij.config` file. It Includes all the java
 library paths. This plugin can search for all the paths inside
 this jars files you include in this file.
 ```
@@ -46,7 +46,7 @@ Setup Java JDK.
 Include all your library path in the file. Should place
 this file at the root of version control directory.
 ```
-(setq organize-imports-java-lib-inc-file "oij.ini")
+(setq organize-imports-java-lib-inc-file "oij.config")
 ```
 
 After reading all the library path, this file will be generated
@@ -118,7 +118,7 @@ depends on how large is your current project.
 or `organize-imports-java-path-local-source-cache-file` cache file in order
 to refresh the cache, the cache file will be regenerated as long as you call any
 reload paths function or do import function.
-* You might want to reload local source cache every time you create a new 
+* You might want to reload local source cache every time you create a new
 .java file in your local source directory.
 
 
