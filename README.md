@@ -7,11 +7,11 @@ And it only uses elisp, making it more portable and light weight.
 
 
 ## How to use? ##
-1. Create an oij.ini file at the version control root directory.
+1. Create an `oij.ini` file at the version control root directory.
 An example can be found below in the “INI Example” section.
-2. After you have included all the Java Libraries into the oij.ini
+2. After you have included all the Java Libraries into the `oij.ini`
 file. You can run `organize-imports-java-do-imports` and it will load
-the included jar path in the oij.ini file and import in the current
+the included jar path in the `oij.ini` file and import in the current
 buffer (It will take a while loading all the jar/lib files the first
 time to create the cache file). If you wish to refresh the
 paths-config.oij file then just call `organize-imports-java-reload-paths`
@@ -19,7 +19,7 @@ function, and it will do the work.
 
 
 ## INI Example ##
-This is an example of oij.ini file. It Includes all the java
+This is an example of `oij.ini` file. It Includes all the java
 library paths. This plugin can search for all the paths inside
 this jars files you include in this file.
 ```
