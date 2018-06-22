@@ -509,17 +509,38 @@ IN-FILENAME : name of the cache file."
                   ;; Overwrite?
                   t)))
 
-(defun organize-imports-java-get-current-point-face-p ()
+(defun organize-imports-java-get-faces (pos)
+  "Get the font faces at POS."
+  (organize-imports-java-flatten-list
+   (remq nil
+         (list
+          (get-char-property pos 'read-face-name)
+          (get-char-property pos 'face)
+          (plist-get (text-properties-at pos) 'face)))))
+
+(defun organize-imports-java-get-current-point-face ()
   "Get current point's type face as string."
   (interactive)
-  (let ((face (or (get-char-property (point) 'read-face-name)
-                  (get-char-property (point) 'face))))
-    face))
+  (organize-imports-java-get-faces (point)))
+
+(defun organize-imports-java-is-current-point-face (in-face)
+  "Check if current face the same face as IN-FACE.
+Returns, True if is the same as pass in face name string.
+False, is not the same as pass in face name string.
+IN-FACE : input face name as string."
+  (let ((faces (organize-imports-java-get-current-point-face)))
+    (if (listp faces)
+        (if (equal (cl-position in-face faces :test 'string=) nil)
+            ;; If return nil, mean not found in the `faces' list.
+            nil
+          ;; If have position, meaning the face exists.
+          t)
+      (string= in-face faces))))
 
 (defun organize-imports-java-current-point-face-list-p (face-name-list)
   "Is the current face name same as one of the pass in string in the list?
 FACE-NAME-LIST : list of face name in string."
-  (cl-some #'(lambda (face-name) (string= (organize-imports-java-get-current-point-face-p) face-name)) face-name-list))
+  (cl-some #'(lambda (face-name) (organize-imports-java-is-current-point-face face-name)) face-name-list))
 
 (defun organize-imports-java-get-type-face-keywords-by-face-name (face-name-list)
   "Get all the type keywords in current buffer.
