@@ -95,11 +95,15 @@
   :group 'organize-imports-java)
 
 (defcustom organize-imports-java-source-dir-name "src"
-  "Source directory in the project, default is 'src'.")
+  "Source directory in the project, default is 'src'."
+  :type 'string
+  :group 'organize-imports-java)
 
 (defcustom organize-imports-java-non-class-list '("Callable"
                                                   "Runnable")
-  "List that are no need to import like interface, etc.")
+  "List that are no need to import like interface, etc."
+  :type 'list
+  :group 'organize-imports-java)
 
 
 (defvar organize-imports-java-path-buffer-jar-lib '()
@@ -283,14 +287,14 @@ STRING : string to do searching."
         (setq pos (match-end 0)))
       matches)))
 
-(defun organize-imports-java-flatten (l)
+(defun organize-imports-java-flatten-list (l)
   "Flatten the multiple dimensional array to one dimensonal array.
 '(1 2 3 4 (5 6 7 8)) => '(1 2 3 4 5 6 7 8).
 
 L : list we want to flaaten."
   (cond ((null l) nil)
         ((atom l) (list l))
-        (t (loop for a in l appending (organize-imports-java-flatten a)))))
+        (t (loop for a in l appending (organize-imports-java-flatten-list a)))))
 
 (defun organize-imports-java-get-local-source ()
   "Get the all the local source file path as a list."
@@ -428,7 +432,7 @@ For .jar files."
 
         ;; Flatten it.
         (setq organize-imports-java-path-buffer-jar-lib
-              (organize-imports-java-flatten organize-imports-java-path-buffer-jar-lib))
+              (organize-imports-java-flatten-list organize-imports-java-path-buffer-jar-lib))
 
         ;; Remove duplicates value from list.
         (setq organize-imports-java-path-buffer-jar-lib
@@ -455,7 +459,7 @@ Usually Java files under project root 'src' directory."
 
   ;; Flatten it.
   (setq organize-imports-java-path-buffer-local-source
-        (organize-imports-java-flatten organize-imports-java-path-buffer-local-source))
+        (organize-imports-java-flatten-list organize-imports-java-path-buffer-local-source))
 
   ;; Remove duplicates value from list.
   (setq organize-imports-java-path-buffer-local-source
