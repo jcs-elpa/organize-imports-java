@@ -130,6 +130,9 @@
                                              "sun")
   "List of non Java source keywords.")
 
+(defvar organize-imports-java-priority-list '("java[.]"
+                                              "javax[.]")
+  "Priority list of the insertion.  Insertion will be base on this list order.")
 
 (defvar organize-imports-java-same-class-name-list '()
   "Paths will store temporary, use to check if multiple class exists in the environment.")
@@ -186,6 +189,18 @@ IN-STR : string to check by the IN-SUB-STR."
 IN-LIST : list of strings.
 STR : string to check if is inside the list of strings above."
   (cl-some #'(lambda (lb-sub-str) (string= lb-sub-str str)) in-list))
+
+(defun organize-imports-java-string-match-position (in-list in-str)
+  "Return position if IN-STR is string match in the list IN-LIST.
+When not found return nil."
+  (let ((index 0)
+        (found-position nil))
+    (dolist (str-item in-list)
+      (when (string-match-p str-item in-str)
+        (setq found-position index))
+      (setq index (1+ index)))
+    ;; Return position.
+    found-position))
 
 ;;;###autoload
 (defun organize-imports-java-current-line-empty-p ()
@@ -413,7 +428,7 @@ IN-FILENAME : filename relative to project root."
   (write-region ""  ;; Start, insert nothing here in order to clean it.
                 nil  ;; End
                 ;; File name (concatenate full path)
-                (concat (cdr (project-current))
+                (concat (cdr (project-current))
                         in-filename)  ;; Cache filename.
                 ;; Overwrite?
                 nil))
@@ -725,6 +740,14 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
 
     ;; ------------------------------------------------------------------------------
     ;; Start searching class name.
+    ;;
+    ;; Loop inside loop, we loop through the whole list of typename in current
+    ;; buffer we attempt to do 'organize-imports' job. And inside this loop, we
+    ;; loop through the alphabet list.
+    ;;   -> First Layer Loop: typename in current buffer.
+    ;;   -> Second Layer Loop: alphabet list.
+    ;; Compare the `typename' in current buffer and the list of sorted `typename'
+    ;; will do the job.
     (let ((tmp-same-class-name-list-length -1)
           ;; Get all the `class-name'/`font-lock-type' from current buffer.
           (type-name-list (organize-imports-java-get-type-face-keywords-by-face-name
@@ -750,17 +773,22 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
             ;; what we just get above a line of code.
             (setq alphabet-list (nth alphabet-id alphabet-list-first))
 
+            ;; ------------------------------------------------------------------------------
+            ;; We loop through the alphabet list to find if there are
+            ;; any matching classes?
+
             (let ((alphabet-list-index 0)
                   (alphabet-list-length (length alphabet-list)))
               (while (< alphabet-list-index alphabet-list-length)
                 (let ((tmp-class-name "")
                       (tmp-full-path ""))
-                  ;; Get class name.
+                  ;; Get class name from the sorted alphabet list.
                   (setq tmp-class-name (nth (1+ alphabet-list-index) alphabet-list))
 
                   ;; Compare the keyword and class name stored.
                   (when (string= tmp-type-class-keyword tmp-class-name)
-                    ;; Get full path.
+                    ;; Get full path, after we make sure that this path
+                    ;; is use inside the current buffer.
                     (setq tmp-full-path (nth alphabet-list-index alphabet-list))
 
                     ;; add full path to check same class name list.
@@ -772,7 +800,11 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
                 (setq alphabet-list-index (+ alphabet-list-index 2)))))
 
           ;; ------------------------------------------------------------------------------
-          ;; Remove duplicate.
+          ;; After we found the full path we need, we check to see if we
+          ;; need to prompt to ask user if there are more than two result.
+
+          ;; Clean duplicates item, just to lower down some performance.
+          ;; And make the logic clearer.
           (setq organize-imports-java-same-class-name-list (delete-dups organize-imports-java-same-class-name-list))
 
           ;; Get the length of the check same class list.
@@ -795,14 +827,81 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
           ;; Clean the same class paths for next loop.
           (setq organize-imports-java-same-class-name-list '()))))
 
+    ;; ------------------------------------------------------------------------------
+    ;; Before insertion job, we do stuff in order to prepare to do insertion job.
 
+    ;; Remove duplicate for pre insert list.
+    (setq insert-path-list (delete-dups insert-path-list))
+
+    ;; Sort in alphabetic order.
+    (setq insert-path-list (sort insert-path-list 'string<))
+
+    (let ((priority-length (length organize-imports-java-priority-list))
+          (priority-index-list '())
+          ;; Represent the list inside `priority-index-list'.
+          ;; Is two dimensional array.
+          (priority-list nil)
+          ;; Store path that aren't in the priority list.
+          (else-path-list '()))
+
+      ;; Make list of prority list's length.
+      (let ((count 0))
+        (while (< count priority-length)
+          (push '() priority-index-list)
+          (setq count (1+ count))))
+
+      ;; Sort list with priority list.
+      (dolist (insert-path insert-path-list)
+        (let (;; Position is also the index/id.
+              (position-in-priority-list -1))
+          ;; NOTE(jenchieh): if `cl-position' not found will return nil.
+          (setq position-in-priority-list
+                (organize-imports-java-string-match-position
+                 organize-imports-java-priority-list
+                 insert-path))
+
+          (if (equal position-in-priority-list nil)
+              ;; When not found.
+              (progn
+                (push insert-path else-path-list))
+            ;; When found.
+            (progn
+              ;; Get the priority list from the `priority-index-list'.
+              (setf priority-list (nth position-in-priority-list
+                                       priority-index-list))
+
+              ;; Add it to prority index list by the priority/id/position.
+              (push insert-path priority-list)
+
+              ;; apply to the two dimensional array.
+              (setf (nth position-in-priority-list
+                         priority-index-list)
+                    priority-list)))))
+
+      ;; ▾▾▾▾▾▾▾▾▾▾ Reverse all the list. ▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾
+      ;; STUDY(jenchieh): Other way to do this, is instead of use `push'.
+      ;; Use some other function instead.
+
+      ;; Reverse all the priority list in `priority-index-list'.
+      ;; And again, `priority-index-list' is two dimensional array.
+      (let ((index 0))
+        (while (< index priority-length)
+          (setf (nth index priority-index-list) (reverse (nth index priority-index-list)))
+          (setq index (1+ index))))
+
+      ;; Reverse other path list too.
+      (setq else-path-list (reverse else-path-list))
+      ;; ▴▴▴▴▴▴▴▴▴▴ Reverse all the list. ▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴▴
+
+      ;; First set to the priority list, don't forget to flatten the two
+      ;; dimensional array.
+      (setq insert-path-list (organize-imports-java-flatten-list priority-index-list))
+      ;; Then append the rest of the path listt.
+      (setq insert-path-list (append insert-path-list else-path-list)))
+
+    ;; ------------------------------------------------------------------------------
+    ;; Start the real insertion job here.
     (save-excursion
-      ;; Remove duplicate for pre insert list.
-      (setq insert-path-list (delete-dups insert-path-list))
-
-      ;; Sort in alphabetic order.
-      (setq insert-path-list (sort insert-path-list 'string<))
-
       ;; Check package keyword exists.
       (goto-char (point-min))
 
