@@ -581,11 +581,11 @@ FACE-NAME-LIST : list of face name in string."
 (defun organize-imports-java-get-type-face-keywords-by-face-name (face-name-list)
   "Get all the type keywords in current buffer.
 FACE-NAME-LIST : face name to search."
-
   (let ((tmp-keyword-list '()))
     (save-excursion
       ;; Goto the end of the buffer.
-      (goto-char (point-max))
+      (with-no-warnings
+        (end-of-buffer))
 
       (while (< (point-min) (point))
         (backward-word 1)
