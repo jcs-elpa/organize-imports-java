@@ -117,6 +117,7 @@
 
 (defvar organize-imports-java-non-src-list '("document"
                                              "internal"
+                                             "package-info"
                                              "sun")
   "List of non Java source keywords.")
 
@@ -383,8 +384,7 @@ L : list we want to flaaten."
         ;; Get all the library path strings by using
         ;; regular expression.
         (setq tmp-class-list (organize-imports-java-re-seq
-                              ;;organize-imports-java-serach-regexp
-                              "[a-zA-Z0-9/_-]*/[A-Z][a-zA-Z0-9$_-]*\\.class"
+                              organize-imports-java-serach-regexp
                               tmp-lib-buffer))
 
         ;; Add the paths to the list.
@@ -508,8 +508,7 @@ IN-FILENAME : name of the cache file."
           ;; Get the class name.
           (setq class-name (nth (1- (length split-path-list)) split-path-list))
 
-          (when (and (not (numberp (read class-name)))
-                     (not (string= class-name "package-info")))
+          (unless (numberp (read class-name))
             ;; Add line break at the end.
             (setq tmp-path (concat tmp-path "\n"))
 
