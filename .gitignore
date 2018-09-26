@@ -16,3 +16,6 @@ TODO(jenchieh).txt
 # ignore example/test files.
 oij.config
 *.oij
+
+# ignore video
+/video
