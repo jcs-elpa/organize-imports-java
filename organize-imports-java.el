@@ -45,7 +45,7 @@
   "Organize imports java extension"
   :prefix "organize-imports-java-"
   :group 'editing
-  :link '(url-link :tag "Repository" "https://github.com/jcs090218/organize-imports-java.git"))
+  :link '(url-link :tag "Repository" "https://github.com/jcs090218/organize-imports-java"))
 
 
 (defcustom organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
