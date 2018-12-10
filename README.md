@@ -12,7 +12,7 @@ And it only uses elisp, making it more portable and light weight.
 
 ## How to use? ##
 1. Create an `oij.config` file at the version control root directory.
-An example can be found below in the “INI Example” section.
+An example can be found below in the “Config Example” section.
 2. After you have included all the Java Libraries into the `oij.config`
 file. You can run `organize-imports-java-do-imports` and it will load
 the included jar path in the `oij.config` file and import in the current
