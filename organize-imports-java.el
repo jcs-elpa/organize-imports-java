@@ -327,8 +327,18 @@ L : list we want to flaaten."
                                             (not (string-match-p "#" (f-filename it))))
                                        t))
 
-    (let ((index 0))
+    (let ((index 0)
+          (current-dirname "")
+          (last-dirname ""))
       (dolist (src-file-path src-file-path-list)
+        ;; Get the current dirname.
+        (setq current-dirname (f-dirname src-file-path))
+
+        (unless (string= current-dirname last-dirname)
+          ;; Update last dirname.
+          (setq last-dirname current-dirname)
+          (message "Searching local source under %s..." current-dirname))
+
         ;; Remove the source file path, only left the package file path.
         (setf (nth index src-file-path-list)
               (s-replace project-source-dir "" src-file-path))
@@ -351,8 +361,6 @@ L : list we want to flaaten."
                            (cdr (project-current))
                            organize-imports-java-lib-inc-file))
         (tmp-lib-list '())
-        ;; Key read from the .ini/.properties file.
-        ;;(tmp-lib-key "")
         ;; Value read from the .ini/.properties file.
         (tmp-lib-path "")
         ;; Buffer read depends on one of the `tmp-lib-path'.
@@ -371,14 +379,14 @@ L : list we want to flaaten."
     (when (file-exists-p tmp-lib-inc-file)
       ;; Read the ini file, in order to get all the target
       ;; lib/jar files.
+      (message "Reading %s..." tmp-lib-inc-file)
       (setq tmp-lib-list (organize-imports-java-parse-ini tmp-lib-inc-file))
+      (message "Done reading %s..." tmp-lib-inc-file)
 
       ;; Get the length of the library list
       (setq tmp-lib-list-length (length tmp-lib-list))
 
       (while (< tmp-index tmp-lib-list-length)
-        ;; Get the key of the path.
-        ;;(setq tmp-lib-key (nth tmp-index tmp-lib-list))
         ;; Get the value of the path.
         (setq tmp-lib-path (nth (1+ tmp-index) tmp-lib-list))
 
@@ -399,6 +407,8 @@ L : list we want to flaaten."
                                                organize-imports-java-java-sdk-path
                                                tmp-lib-path)))))
 
+        (message "Loading %s..." tmp-lib-path)
+
         ;; Read the jar/lib to temporary buffer.
         (setq tmp-lib-buffer (organize-imports-java-get-string-from-file tmp-lib-path))
 
@@ -407,6 +417,8 @@ L : list we want to flaaten."
         (setq tmp-class-list (organize-imports-java-re-seq
                               organize-imports-java-serach-regexp
                               tmp-lib-buffer))
+
+        (message "Done loading lib path from %s." tmp-lib-path)
 
         ;; Add the paths to the list.
         (push tmp-class-list all-lib-path-list)
