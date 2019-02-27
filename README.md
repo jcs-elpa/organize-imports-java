@@ -8,7 +8,6 @@
 Organize Imports Java is an organize imports functionality plugin for
 editing Java code. This plugin mimics Eclipse uses of the C-S-o key.
 And it only uses elisp, making it more portable and light weight.
-<br/><br/>
 
 
 ## How to use? ##
@@ -27,7 +26,7 @@ function, and it will do the work.
 This is an example of `oij.config` file. It Includes all the java
 library paths. This plugin can search for all the paths inside
 this jars files you include in this file.
-```
+```ini
 #
 # Include Java .jar file paths.
 #
@@ -44,27 +43,27 @@ qtjambi-4.8.7=./test_lib/qtjambi-4.8.7.jar
 
 ## Configuration ##
 Setup Java JDK.
-```
+```el
 (setq organize-imports-java-java-sdk-path "/path/to/java/jdk/")
 ```
 
 Include all your library path in the file. Should place
 this file at the root of version control directory.
-```
+```el
 (setq organize-imports-java-lib-inc-file "oij.config")
 ```
 
 After reading all the library path, this file will be generated
 for cache search on what library should be import to current
 buffer/file.
-```
+```el
 (setq organize-imports-java-path-jar-lib-cache-file "paths-cache.oij")
 ```
 
 Local source will be loaded automatically after loaded all the external .jar files.
 The local source file will depends on `organize-imports-java-source-dir-name`
 variable path.
-```
+```el
 (setq organize-imports-java-path-local-source-cache-file "paths-cache-local.oij")
 ```
 
@@ -72,19 +71,19 @@ This plugin detect each word's font face in the current buffer to find
 which word is the class keyword to import. By setting this variable
 can add/remove the list of font face you want this plugin to detect
 the class type.
-```
+```el
 (setq organize-imports-java-font-lock-type-face '("font-lock-type-face"))
 ```
 
 For some reason your project source files isn't under `src` folder. You can
 change it by setting this variable.
-```
+```el
 (setq organize-imports-java-source-dir-name "src")
 ```
 
 If there are something that you do not usually want to import to your buffer,
 you can modified this variable and reload the cache files.
-```
+```el
 (setq organize-imports-java-non-class-list '("Callable"
                                              "Runnable"))
 ```
@@ -92,7 +91,7 @@ you can modified this variable and reload the cache files.
 
 ## Key Bindings ##
 If you want, you can just bind the key to the function directly.
-```
+```el
 ;; Do the import, if could not find paths-config.oij file then it will
 ;; reload the paths once.
 (define-key java-mode-map (kbd "C-S-o") #'organize-imports-java-do-imports)
@@ -102,19 +101,19 @@ If you want, you can just bind the key to the function directly.
 
 Reload both local source and jar/lib Java path once. This will overwrite
 all the cache file and this call might take a while to complete.
-```
+```el
 #'organize-imports-java-reload-paths
 ```
 
 Just reload the jar/lib Java path once. This should take a while because Java
 API is HUGE!
-```
+```el
 #'organize-imports-java-reload-jar-lib-paths
 ```
 
 Just reload the local source Java path once. The time consume should just
 depends on how large is your current project.
-```
+```el
 #'organize-imports-java-reload-local-source-paths
 ```
 
