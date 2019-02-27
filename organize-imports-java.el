@@ -202,19 +202,16 @@ When not found return nil."
     ;; Return position.
     found-position))
 
-;;;###autoload
 (defun organize-imports-java-current-line-empty-p ()
   "Current line empty, but accept spaces/tabs in there.  (not absolute)."
   (save-excursion
     (beginning-of-line)
     (looking-at "[[:space:]\t]*$")))
 
-;;;###autoload
 (defun organize-imports-java-keep-one-line-between ()
   "Keep one line between the two line of code.
 If you want to keep more than one line use
 `organize-imports-java-keep-n-line-between' instead."
-  (interactive)
   (if (organize-imports-java-current-line-empty-p)
       (progn
         (forward-line 1)
@@ -568,7 +565,6 @@ IN-FILENAME : name of the cache file."
 
 (defun organize-imports-java-get-current-point-face ()
   "Get current point's type face as string."
-  (interactive)
   (organize-imports-java-get-faces (point)))
 
 (defun organize-imports-java-is-current-point-face (in-face)
@@ -614,10 +610,8 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
   (insert tmp-one-path)
   (insert ";\n"))
 
-;;;###autoload
 (defun organize-imports-java-kill-whole-line ()
   "Deletes a line, but does not put it in the `kill-ring'."
-  (interactive)
   (let ((kill-ring))
     (if (use-region-p)
         (delete-region (region-beginning) (region-end))
