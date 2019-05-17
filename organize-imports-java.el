@@ -4,7 +4,7 @@
 ;; Created date 2018-04-16 13:12:01
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
-;; Description: Mimic Eclipse C-S-o key. (Organeize Imports)
+;; Description: Automatically organize imports in Java code.
 ;; Keyword: organize imports java handy eclipse
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "26") (f "0.20.0") (s "1.12.0") (cl-lib "0.6"))
@@ -27,7 +27,7 @@
 
 ;;; Commentary:
 ;;
-;; Mimic Eclipse's Organize Imports functionality.
+;; Automatically organize imports in Java code.
 ;;
 ;; (@* "TODO" )
 ;; * Performance is terrible when loading all the jar files to path.
