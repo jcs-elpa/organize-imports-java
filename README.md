@@ -3,14 +3,19 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
-# organize-imports-java #
+# organize-imports-java
+> Automatically organize imports in Java code.
+
+| Emacs using this package                                | Eclipse built-in                                        |
+|:-------------------------------------------------------:|:-------------------------------------------------------:|
+|<img src="./screenshot/orangize_imports_java_demo1.gif"/>|<img src="./screenshot/organize-imports-in-eclipse.gif"/>|
 
 Organize Imports Java is an organize imports functionality plugin for
 editing Java code. This plugin mimics Eclipse uses of the C-S-o key.
 And it only uses elisp, making it more portable and light weight.
 
 
-## How to use? ##
+## How to use?
 1. Create an `oij.config` file at the version control root directory.
 An example can be found below in the “Config Example” section.
 2. After you have included all the Java Libraries into the `oij.config`
@@ -22,7 +27,7 @@ paths-config.oij file then just call `organize-imports-java-reload-paths`
 function, and it will do the work.
 
 
-## Config Example ##
+## Config Example
 This is an example of `oij.config` file. It Includes all the java
 library paths. This plugin can search for all the paths inside
 this jars files you include in this file.
@@ -41,7 +46,7 @@ qtjambi-4.8.7=./test_lib/qtjambi-4.8.7.jar
 ```
 
 
-## Configuration ##
+## Configuration
 Setup Java JDK.
 ```el
 (setq organize-imports-java-java-sdk-path "/path/to/java/jdk/")
@@ -89,7 +94,7 @@ you can modified this variable and reload the cache files.
 ```
 
 
-## Key Bindings ##
+## Key Bindings
 If you want, you can just bind the key to the function directly.
 ```el
 ;; Do the import, if could not find paths-config.oij file then it will
@@ -97,7 +102,7 @@ If you want, you can just bind the key to the function directly.
 (define-key java-mode-map (kbd "C-S-o") #'organize-imports-java-do-imports)
 ```
 
-## Functions ##
+## Functions
 
 Reload both local source and jar/lib Java path once. This will overwrite
 all the cache file and this call might take a while to complete.
@@ -117,7 +122,7 @@ depends on how large is your current project.
 (call-interactively #'organize-imports-java-reload-local-source-paths)
 ```
 
-## Tips ##
+## Tips
 * You can just delete either `organize-imports-java-path-jar-lib-cache-file`
 or `organize-imports-java-path-local-source-cache-file` cache file in order
 to refresh the cache, the cache file will be regenerated as long as you call any
@@ -126,18 +131,12 @@ reload paths function or do import function.
 .java file in your local source directory.
 
 
-## Comparison ##
-Emacs using this package                                                           | Eclipse built-in
-:---------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------:|
-<img src="./screenshot/orangize_imports_java_demo1.gif" width="400" height="350"/> | <img src="./screenshot/organize-imports-in-eclipse.gif" width="400" height="350"/> |
-
-
-## Some Possible Improvement ##
+## Some Possible Improvement
 * Performance is terrible when loading all the jar files to path.
 Hopefully I can find out a way to get around this issue.
 
 
-## Contribution ##
+## Contribution
 If you would like to contribute to this project, you may either 
 clone and make pull requests to this repository. Or you can 
 clone the project and establish your own branch of this tool. 
