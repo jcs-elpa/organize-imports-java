@@ -10,9 +10,9 @@
 |:-------------------------------------------------------:|:-------------------------------------------------------:|
 |<img src="./screenshot/orangize_imports_java_demo1.gif"/>|<img src="./screenshot/organize-imports-in-eclipse.gif"/>|
 
-Organize Imports Java is an organize imports functionality plugin for
-editing Java code. This plugin mimics Eclipse uses of the C-S-o key.
-And it only uses elisp, making it more portable and light weight.
+Organize Imports Java is an Emacs plugin that helps add required imports 
+and removes unused imports from `.java` file. The idea came from amazing 
+IDE Eclipse's C-S-o key.
 
 *P.S. Inspired by [Eclipse](https://www.eclipse.org/) organize imports preset behavior.*
 
