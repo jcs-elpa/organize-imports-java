@@ -109,19 +109,19 @@ If you want, you can just bind the key to the function directly.
 Reload both local source and jar/lib Java path once. This will overwrite
 all the cache file and this call might take a while to complete.
 ```el
-(call-interactively #'organize-imports-java-reload-paths)
+M-x organize-imports-java-reload-paths
 ```
 
 Just reload the jar/lib Java path once. This should take a while because Java
 API is HUGE!
 ```el
-(call-interactively #'organize-imports-java-reload-jar-lib-paths)
+M-x organize-imports-java-reload-jar-lib-paths
 ```
 
 Just reload the local source Java path once. The time consume should just
 depends on how large is your current project.
 ```el
-(call-interactively #'organize-imports-java-reload-local-source-paths)
+M-x organize-imports-java-reload-local-source-paths
 ```
 
 ## Tips
