@@ -14,6 +14,8 @@ Organize Imports Java is an organize imports functionality plugin for
 editing Java code. This plugin mimics Eclipse uses of the C-S-o key.
 And it only uses elisp, making it more portable and light weight.
 
+*P.S. Inspired by [Eclipse](https://www.eclipse.org/) organize imports preset behavior.*
+
 
 ## How to use?
 1. Create an `oij.config` file at the version control root directory.
