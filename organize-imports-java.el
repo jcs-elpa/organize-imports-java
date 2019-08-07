@@ -437,7 +437,7 @@ IN-FILENAME : filename relative to project root."
   (write-region ""  ;; Start, insert nothing here in order to clean it.
                 nil  ;; End
                 ;; File name (concatenate full path)
-                (concat (cdr (project-current))
+                (concat (cdr (project-current))
                         in-filename)  ;; Cache filename.
                 ;; Overwrite?
                 nil))
@@ -817,7 +817,7 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
           (setq tmp-same-class-name-list-length (length organize-imports-java-same-class-name-list))
 
           ;; to the final insert path list.
-          ;; IMPORTANT(jenchieh): Here is where you actually add the inserted path
+          ;; IMPORTANT: Here is where you actually add the inserted path
           (cond ((= tmp-same-class-name-list-length 1)
                  (progn
                    ;; Is exactly 1 result. Just add that to the
@@ -860,7 +860,7 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
       (dolist (insert-path insert-path-list)
         (let (;; Position is also the index/id.
               (position-in-priority-list -1))
-          ;; NOTE(jenchieh): if `cl-position' not found will return nil.
+          ;; NOTE: if `cl-position' not found will return nil.
           (setq position-in-priority-list
                 (organize-imports-java-string-match-position
                  organize-imports-java-priority-list
@@ -885,8 +885,8 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
                     priority-list)))))
 
       ;; ▾▾▾▾▾▾▾▾▾▾ Reverse all the list. ▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾
-      ;; STUDY(jenchieh): Other way to do this, is instead of use `push'.
-      ;; Use some other function instead.
+      ;; STUDY: Other way to do this, is instead of use `push'. Use some
+      ;; other function instead.
 
       ;; Reverse all the priority list in `priority-index-list'.
       ;; And again, `priority-index-list' is two dimensional array.
