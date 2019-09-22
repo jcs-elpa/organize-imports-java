@@ -7,7 +7,7 @@
 ;; Description: Automatically organize imports in Java code.
 ;; Keyword: organize imports java handy eclipse
 ;; Version: 0.1.2
-;; Package-Requires: ((emacs "26") (f "0.20.0") (s "1.12.0") (cl-lib "0.6"))
+;; Package-Requires: ((emacs "24") (f "0.20.0") (s "1.12.0") (cl-lib "0.6"))
 ;; URL: https://github.com/jcs090218/organize-imports-java
 
 ;; This file is NOT part of GNU Emacs.
