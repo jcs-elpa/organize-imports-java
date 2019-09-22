@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2018  Shen, Jen-Chieh
 ;; Created date 2018-04-16 13:12:01
-
+#
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Automatically organize imports in Java code.
 ;; Keyword: organize imports java handy eclipse
