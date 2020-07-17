@@ -8,7 +8,7 @@
 ;; Keyword: organize imports java handy eclipse
 ;; Version: 0.1.3
 ;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0"))
-;; URL: https://github.com/jcs090218/organize-imports-java
+;; URL: https://github.com/jcs-elpa/organize-imports-java
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -44,7 +44,7 @@
   "Organize imports java extension"
   :prefix "organize-imports-java-"
   :group 'editing
-  :link '(url-link :tag "Repository" "https://github.com/jcs090218/organize-imports-java"))
+  :link '(url-link :tag "Repository" "https://github.com/jcs-elpa/organize-imports-java"))
 
 (defcustom organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
   "Java SDK Path."
