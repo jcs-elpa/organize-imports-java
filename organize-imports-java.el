@@ -1,4 +1,4 @@
-;;; organize-imports-java.el --- Automatically organize imports in Java code.  -*- lexical-binding: t; -*-
+;;; organize-imports-java.el --- Automatically organize imports in Java code  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018  Shen, Jen-Chieh
 ;; Created date 2018-04-16 13:12:01
@@ -7,7 +7,7 @@
 ;; Description: Automatically organize imports in Java code.
 ;; Keyword: organize imports java handy eclipse
 ;; Version: 0.1.3
-;; Package-Requires: ((emacs "24") (f "0.20.0") (s "1.12.0") (cl-lib "0.6"))
+;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0"))
 ;; URL: https://github.com/jcs090218/organize-imports-java
 
 ;; This file is NOT part of GNU Emacs.
@@ -40,13 +40,11 @@
 (require 'f)
 (require 's)
 
-
 (defgroup organize-imports-java nil
   "Organize imports java extension"
   :prefix "organize-imports-java-"
   :group 'editing
   :link '(url-link :tag "Repository" "https://github.com/jcs090218/organize-imports-java"))
-
 
 (defcustom organize-imports-java-java-sdk-path "C:/Program Files/Java/jdk1.8.0_131"
   "Java SDK Path."
@@ -114,7 +112,6 @@
   :type 'list
   :group 'organize-imports-java)
 
-
 (defvar organize-imports-java-path-buffer-jar-lib '()
   "All the available java paths store here.")
 
@@ -137,7 +134,7 @@
 (defvar organize-imports-java-same-class-name-list '()
   "Paths will store temporary, use to check if multiple class exists in the environment.")
 
-
+;;; Util
 
 (defun organize-imports-java-get-alphabet-id (c)
   "Get the alphabet id.
@@ -170,24 +167,16 @@ C : character to find the alphabet id."
         ((string= c "Z") (progn 25))
         (t (progn -1))))
 
-(defun organize-imports-java-is-contain-list-string (in-list in-str)
-  "Check if a string contain in any string in the string list.
-IN-LIST : list of string use to check if IN-STR in contain one of
-the string.
-IN-STR : string using to check if is contain one of the IN-LIST."
+(defun organize-imports-java--is-contain-list-string (in-list in-str)
+  "Check if IN-STR contain in any string in the IN-LIST."
   (cl-some #'(lambda (lb-sub-str) (string-match-p (regexp-quote lb-sub-str) in-str)) in-list))
 
-(defun organize-imports-java-contain-string (in-sub-str in-str)
-  "Check if a string is a substring of another string.
-Return true if contain, else return false.
-IN-SUB-STR : substring to see if contain in the IN-STR.
-IN-STR : string to check by the IN-SUB-STR."
+(defun organize-imports-java--contain-string (in-sub-str in-str)
+  "Check if string IN-SUB-STR is a substring of another string IN-STR."
   (string-match-p (regexp-quote in-sub-str) in-str))
 
-(defun organize-imports-java-is-in-list-string (in-list str)
-  "Check if a string in the string list.
-IN-LIST : list of strings.
-STR : string to check if is inside the list of strings above."
+(defun organize-imports-java--is-in-list-string (in-list str)
+  "Check if a string (STR) in the string list (IN-LIST)."
   (cl-some #'(lambda (lb-sub-str) (string= lb-sub-str str)) in-list))
 
 (defun organize-imports-java-string-match-position (in-list in-str)
@@ -397,7 +386,7 @@ L : list we want to flaaten."
                  ;; Modefied path to version control path.
                  (setq tmp-lib-path (concat (cdr (project-current)) tmp-lib-path))))
               ;; Swap #SDK_PATH# to valid Java SDK path, if contain.
-              ((organize-imports-java-contain-string organize-imports-java-inc-keyword
+              ((organize-imports-java--contain-string organize-imports-java-inc-keyword
                                                      tmp-lib-path)
                (progn
                  (setq tmp-lib-path (s-replace organize-imports-java-inc-keyword
@@ -515,9 +504,9 @@ IN-FILENAME : name of the cache file."
       (setq first-char-from-path (substring tmp-path 0 1))
 
       (when (and (not (equal (upcase first-char-from-path) first-char-from-path))
-                 (not (organize-imports-java-is-contain-list-string organize-imports-java-non-src-list
+                 (not (organize-imports-java--is-contain-list-string organize-imports-java-non-src-list
                                                                     tmp-path))
-                 (not (organize-imports-java-is-contain-list-string organize-imports-java-non-class-list
+                 (not (organize-imports-java--is-contain-list-string organize-imports-java-non-class-list
                                                                     tmp-path))
                  (not (organize-imports-java-is-digit-string first-char-from-path))
                  (not (string= first-char-from-path "-"))
@@ -760,7 +749,7 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
                            organize-imports-java-font-lock-type-faces)))
       (dolist (tmp-type-class-keyword type-name-list)
         ;; Exclude the general data type. (String, Integer, etc.)
-        (when (not (organize-imports-java-is-in-list-string organize-imports-java-unsearch-class-type
+        (when (not (organize-imports-java--is-in-list-string organize-imports-java-unsearch-class-type
                                                             tmp-type-class-keyword))
           (let (;; Choose one list from `alphabet-list-first',
                 ;; depends on alphabet id.
