@@ -179,55 +179,52 @@ C : character to find the alphabet id."
   "Check if a string (STR) in the string list (IN-LIST)."
   (cl-some #'(lambda (lb-sub-str) (string= lb-sub-str str)) in-list))
 
-(defun organize-imports-java-string-match-position (in-list in-str)
+(defun organize-imports-java--string-match-position (in-list in-str)
   "Return position if IN-STR is string match in the list IN-LIST.
 When not found return nil."
-  (let ((index 0)
-        (found-position nil))
+  (let ((index 0) (found-position nil))
     (dolist (str-item in-list)
-      (when (string-match-p str-item in-str)
-        (setq found-position index))
+      (when (string-match-p str-item in-str) (setq found-position index))
       (setq index (1+ index)))
     ;; Return position.
     found-position))
 
-(defun organize-imports-java-current-line-empty-p ()
+(defun organize-imports-java--current-line-empty-p ()
   "Current line empty, but accept spaces/tabs in there.  (not absolute)."
   (save-excursion
     (beginning-of-line)
     (looking-at "[[:space:]\t]*$")))
 
-(defun organize-imports-java-keep-one-line-between ()
+(defun organize-imports-java--keep-one-line-between ()
   "Keep one line between the two line of code.
 If you want to keep more than one line use
 `organize-imports-java-keep-n-line-between' instead."
-  (if (organize-imports-java-current-line-empty-p)
+  (if (organize-imports-java--current-line-empty-p)
       (progn
         (forward-line 1)
-
         ;; Kill empty line until there is one line.
-        (while (organize-imports-java-current-line-empty-p)
-          (organize-imports-java-kill-whole-line)))
-    (progn
-      ;; Make sure have one empty line between.
-      (insert "\n"))))
+        (while (organize-imports-java--current-line-empty-p)
+          (organize-imports-java--kill-whole-line)))
+    ;; Make sure have one empty line between.
+    (insert "\n")))
 
-(defun organize-imports-java-get-string-from-file (file-path)
-  "Return file-path's file content.
-FILE-PATH : file path."
+(defun organize-imports-java--get-string-from-file (file-path)
+  "Return FILE-PATH's file content."
   (with-temp-buffer
     (insert-file-contents file-path)
     (buffer-string)))
 
-(defun organize-imports-java-parse-ini (file-path)
-  "Parse a .ini file.
-FILE-PATH : .ini file to parse."
+(defun organize-imports-java--erase-file (in-filename)
+  "Erase IN-FILENAME relative to project root."
+  (write-region "" nil (concat (cdr (project-current)) in-filename) nil))
 
-  (let ((tmp-ini (organize-imports-java-get-string-from-file file-path))
-        (tmp-ini-list '())
-        (tmp-pair-list nil)
-        (tmp-keyword "")
-        (tmp-value "")
+;;; Parse INI
+
+(defun organize-imports-java--parse-ini (file-path)
+  "Parse a .ini file with FILE-PATH."
+  (let ((tmp-ini (organize-imports-java--get-string-from-file file-path))
+        (tmp-ini-list '()) (tmp-pair-list nil)
+        (tmp-keyword "") (tmp-value "")
         (count 0))
     (setq tmp-ini (split-string tmp-ini "\n"))
 
@@ -255,16 +252,12 @@ FILE-PATH : .ini file to parse."
     ;; return list.
     tmp-ini-list))
 
-(defun organize-imports-java-get-properties (ini-list in-key)
+(defun organize-imports-java--get-properties (ini-list in-key)
   "Get properties data.  Search by key and return value.
 INI-LIST : ini list.  Please use this with/after using
-`organize-imports-java-parse-ini' function.
+`organize-imports-java--parse-ini' function.
 IN-KEY : key to search for value."
-  (let ((tmp-index 0)
-        (tmp-key "")
-        (tmp-value "")
-        (returns-value ""))
-
+  (let ((tmp-index 0) (tmp-key "") (tmp-value "") (returns-value ""))
     (while (< tmp-index (length ini-list))
       ;; Get the key and data value.
       (setq tmp-key (nth tmp-index ini-list))
@@ -281,41 +274,34 @@ IN-KEY : key to search for value."
     ;; Found nothing, return empty string.
     returns-value))
 
-(defun organize-imports-java-re-seq (regexp string)
-  "Get a list of all regexp match in a string.
+;;; Core
 
-REGEXP : regular expression.
-STRING : string to do searching."
+(defun organize-imports-java--re-seq (regexp string)
+  "Get a list of all REGEXP match in a STRING."
   (save-match-data
-    (let ((case-fold-search t)
-          (pos 0)
-          matches)
+    (let ((case-fold-search t) (pos 0) matches)
       (while (string-match regexp string pos)
         (push (match-string 0 string) matches)
         (setq pos (match-end 0)))
       matches)))
 
-(defun organize-imports-java-flatten-list (l)
-  "Flatten the multiple dimensional array to one dimensonal array.
-'(1 2 3 4 (5 6 7 8)) => '(1 2 3 4 5 6 7 8).
-
-L : list we want to flaaten."
+(defun organize-imports-java--flatten-list (l)
+  "Flatten the multiple dimensional array (L) to one dimensonal array."
   (cond ((null l) nil)
         ((atom l) (list l))
-        (t (loop for a in l appending (organize-imports-java-flatten-list a)))))
+        (t (loop for a in l appending (organize-imports-java--flatten-list a)))))
 
 (defun organize-imports-java-get-local-source ()
   "Get the all the local source file path as a list."
-  (let ((src-file-path-list '())
-        (project-source-dir (concat (cdr (project-current)) organize-imports-java-source-dir-name "/")))
+  (let* ((src-file-path-list '())
+         (project-dir (cdr (project-current)))
+         (project-source-dir (concat project-dir organize-imports-java-source-dir-name "/")))
     (setq src-file-path-list (f--files project-source-dir
                                        (and (string= (f-ext it) "java")
                                             (not (string-match-p "#" (f-filename it))))
                                        t))
 
-    (let ((index 0)
-          (current-dirname "")
-          (last-dirname ""))
+    (let ((index 0) (current-dirname "") (last-dirname ""))
       (dolist (src-file-path src-file-path-list)
         ;; Get the current dirname.
         (setq current-dirname (f-dirname src-file-path))
@@ -366,7 +352,7 @@ L : list we want to flaaten."
       ;; Read the ini file, in order to get all the target
       ;; lib/jar files.
       (message "Reading %s..." tmp-lib-inc-file)
-      (setq tmp-lib-list (organize-imports-java-parse-ini tmp-lib-inc-file))
+      (setq tmp-lib-list (organize-imports-java--parse-ini tmp-lib-inc-file))
       (message "Done reading %s..." tmp-lib-inc-file)
 
       ;; Get the length of the library list
@@ -387,7 +373,7 @@ L : list we want to flaaten."
                  (setq tmp-lib-path (concat (cdr (project-current)) tmp-lib-path))))
               ;; Swap #SDK_PATH# to valid Java SDK path, if contain.
               ((organize-imports-java--contain-string organize-imports-java-inc-keyword
-                                                     tmp-lib-path)
+                                                      tmp-lib-path)
                (progn
                  (setq tmp-lib-path (s-replace organize-imports-java-inc-keyword
                                                organize-imports-java-java-sdk-path
@@ -396,11 +382,11 @@ L : list we want to flaaten."
         (message "Loading %s..." tmp-lib-path)
 
         ;; Read the jar/lib to temporary buffer.
-        (setq tmp-lib-buffer (organize-imports-java-get-string-from-file tmp-lib-path))
+        (setq tmp-lib-buffer (organize-imports-java--get-string-from-file tmp-lib-path))
 
         ;; Get all the library path strings by using
         ;; regular expression.
-        (setq tmp-class-list (organize-imports-java-re-seq
+        (setq tmp-class-list (organize-imports-java--re-seq
                               organize-imports-java-serach-regexp
                               tmp-lib-buffer))
 
@@ -417,19 +403,8 @@ L : list we want to flaaten."
 (defun organize-imports-java-erase-cache-file ()
   "Clean all the buffer in the cache files."
   (interactive)
-  (organize-imports-java-erase-file organize-imports-java-path-jar-lib-cache-file)
-  (organize-imports-java-erase-file organize-imports-java-path-local-source-cache-file))
-
-(defun organize-imports-java-erase-file (in-filename)
-  "Erase a file.
-IN-FILENAME : filename relative to project root."
-  (write-region ""  ;; Start, insert nothing here in order to clean it.
-                nil  ;; End
-                ;; File name (concatenate full path)
-                (concat (cdr (project-current))
-                        in-filename)  ;; Cache filename.
-                ;; Overwrite?
-                nil))
+  (organize-imports-java--erase-file organize-imports-java-path-jar-lib-cache-file)
+  (organize-imports-java--erase-file organize-imports-java-path-local-source-cache-file))
 
 ;;;###autoload
 (defun organize-imports-java-reload-paths ()
@@ -455,15 +430,15 @@ For .jar files."
 
         ;; Flatten it.
         (setq organize-imports-java-path-buffer-jar-lib
-              (organize-imports-java-flatten-list organize-imports-java-path-buffer-jar-lib))
+              (organize-imports-java--flatten-list organize-imports-java-path-buffer-jar-lib))
 
         ;; Remove duplicates value from list.
         (setq organize-imports-java-path-buffer-jar-lib
               (delete-dups organize-imports-java-path-buffer-jar-lib))
 
-        (organize-imports-java-erase-file organize-imports-java-path-jar-lib-cache-file)
-        (organize-imports-java-load-path-and-write-cache organize-imports-java-path-buffer-jar-lib
-                                                         organize-imports-java-path-jar-lib-cache-file))
+        (organize-imports-java--erase-file organize-imports-java-path-jar-lib-cache-file)
+        (organize-imports-java--load-path-and-write-cache organize-imports-java-path-buffer-jar-lib
+                                                          organize-imports-java-path-jar-lib-cache-file))
     (error "%s"
            (propertize (concat "Include jar path file missing : "
                                (cdr (project-current))
@@ -482,22 +457,21 @@ Usually Java files under project root 'src' directory."
 
   ;; Flatten it.
   (setq organize-imports-java-path-buffer-local-source
-        (organize-imports-java-flatten-list organize-imports-java-path-buffer-local-source))
+        (organize-imports-java--flatten-list organize-imports-java-path-buffer-local-source))
 
   ;; Remove duplicates value from list.
   (setq organize-imports-java-path-buffer-local-source
         (delete-dups organize-imports-java-path-buffer-local-source))
 
-  (organize-imports-java-erase-file organize-imports-java-path-local-source-cache-file)
-  (organize-imports-java-load-path-and-write-cache organize-imports-java-path-buffer-local-source
-                                                   organize-imports-java-path-local-source-cache-file))
+  (organize-imports-java--erase-file organize-imports-java-path-local-source-cache-file)
+  (organize-imports-java--load-path-and-write-cache organize-imports-java-path-buffer-local-source
+                                                    organize-imports-java-path-local-source-cache-file))
 
-(defun organize-imports-java-load-path-and-write-cache (path-list in-filename)
+(defun organize-imports-java--load-path-and-write-cache (path-list in-filename)
   "Load the path and write the cache file.
 PATH-LIST : content paths we will write to IN-FILENAME.
 IN-FILENAME : name of the cache file."
-  (let ((first-char-from-path "")
-        (tmp-write-to-file-content-buffer ""))
+  (let ((first-char-from-path "") (tmp-write-to-file-content-buffer ""))
     ;; Write into file so we don't need to do it every times.
     (dolist (tmp-path path-list)
       ;; Get the first character of the path.
@@ -505,10 +479,10 @@ IN-FILENAME : name of the cache file."
 
       (when (and (not (equal (upcase first-char-from-path) first-char-from-path))
                  (not (organize-imports-java--is-contain-list-string organize-imports-java-non-src-list
-                                                                    tmp-path))
+                                                                     tmp-path))
                  (not (organize-imports-java--is-contain-list-string organize-imports-java-non-class-list
-                                                                    tmp-path))
-                 (not (organize-imports-java-is-digit-string first-char-from-path))
+                                                                     tmp-path))
+                 (not (organize-imports-java--is-digit-string first-char-from-path))
                  (not (string= first-char-from-path "-"))
                  (not (string= first-char-from-path ".")))
         ;; Swap `/' to `.'.
@@ -520,8 +494,7 @@ IN-FILENAME : name of the cache file."
         ;; Remove `.class'.
         (setq tmp-path (s-replace ".class" "" tmp-path))
 
-        (let ((class-name "")
-              (split-path-list '()))
+        (let ((class-name "") (split-path-list '()))
           (setq split-path-list (split-string tmp-path "\\."))
 
           ;; Get the class name.
@@ -535,17 +508,14 @@ IN-FILENAME : name of the cache file."
             (setq tmp-write-to-file-content-buffer (concat tmp-path tmp-write-to-file-content-buffer))))))
 
     ;; Write to file all at once.
-    (write-region tmp-write-to-file-content-buffer  ;; Start
-                  nil  ;; End
-                  ;; File name (concatenate full path)
-                  (concat (cdr (project-current))
-                          in-filename)  ;; Cache filename.
-                  ;; Overwrite?
+    (write-region tmp-write-to-file-content-buffer
+                  nil
+                  (concat (cdr (project-current)) in-filename)
                   t)))
 
 (defun organize-imports-java-get-faces (pos)
   "Get the font faces at POS."
-  (organize-imports-java-flatten-list
+  (organize-imports-java--flatten-list
    (remq nil
          (list
           (get-char-property pos 'read-face-name)
@@ -556,7 +526,7 @@ IN-FILENAME : name of the cache file."
   "Get current point's type face as string."
   (organize-imports-java-get-faces (point)))
 
-(defun organize-imports-java-is-current-point-face (in-face)
+(defun organize-imports-java--is-current-point-face (in-face)
   "Check if current face the same face as IN-FACE.
 Returns, True if is the same as pass in face name string.
 False, is not the same as pass in face name string.
@@ -570,12 +540,12 @@ IN-FACE : input face name as string."
           t)
       (string= in-face faces))))
 
-(defun organize-imports-java-current-point-face-list-p (face-name-list)
+(defun organize-imports-java--current-point-face-list-p (face-name-list)
   "Is the current face name same as one of the pass in string in the list?
 FACE-NAME-LIST : list of face name in string."
-  (cl-some #'(lambda (face-name) (organize-imports-java-is-current-point-face face-name)) face-name-list))
+  (cl-some #'(lambda (face-name) (organize-imports-java--is-current-point-face face-name)) face-name-list))
 
-(defun organize-imports-java-get-type-face-keywords-by-face-name (face-name-list)
+(defun organize-imports-java--get-type-face-keywords-by-face-name (face-name-list)
   "Get all the type keywords in current buffer.
 FACE-NAME-LIST : face name to search."
   (let ((tmp-keyword-list '()))
@@ -586,27 +556,26 @@ FACE-NAME-LIST : face name to search."
 
       (while (< (point-min) (point))
         (backward-word 1)
-        (when (organize-imports-java-current-point-face-list-p face-name-list)
+        (when (organize-imports-java--current-point-face-list-p face-name-list)
           (push (thing-at-point 'word) tmp-keyword-list))))
     ;; Remove duplicate
     (setq tmp-keyword-list (delete-dups tmp-keyword-list))
     tmp-keyword-list))
 
-(defun organize-imports-java-insert-import-lib (tmp-one-path)
+(defun organize-imports-java--insert-import-lib (tmp-one-path)
   "Insert the import code line here.  Also design it here.
 Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/code."
   (insert "import ")
   (insert tmp-one-path)
   (insert ";\n"))
 
-(defun organize-imports-java-kill-whole-line ()
+(defun organize-imports-java--kill-whole-line ()
   "Deletes a line, but does not put it in the `kill-ring'."
   (let ((kill-ring))
     (if (use-region-p)
         (delete-region (region-beginning) (region-end))
-      (progn
-        (move-beginning-of-line 1)
-        (kill-line 1)))))
+      (move-beginning-of-line 1)
+      (kill-line 1))))
 
 ;;;###autoload
 (defun organize-imports-java-clear-all-imports ()
@@ -617,15 +586,14 @@ Argument TMP-ONE-PATH Temporary passing in path, use to insert import string/cod
     (while (< (point-min) (point))
       (beginning-of-line)
       (when (string= (thing-at-point 'word) "import")
-        (organize-imports-java-kill-whole-line))
+        (organize-imports-java--kill-whole-line))
       (forward-line -1))))
 
-(defun organize-imports-java-is-digit-string (c)
+(defun organize-imports-java--is-digit-string (c)
   "Check if C is a digit."
   (string-match-p "\^[0-9]'" c))
 
-;;;###autoload
-(defun organize-imports-java-same-class-ask (type)
+(defun organize-imports-java--same-class-ask (type)
   "Ask the user which path should you import?
 TYPE : path string will be store at."
   (interactive
@@ -634,11 +602,10 @@ TYPE : path string will be store at."
   ;; Just return the asked result/answer input.
   type)
 
-(defun organize-imports-java-get-paths-from-cache (in-cache)
+(defun organize-imports-java--get-paths-from-cache (in-cache)
   "Return the list of path from IN-CHACHE.
 IN-CACHE : cache file name relative to project root folder."
-  (let ((tmp-config-fullpath (concat (cdr (project-current))
-                                     in-cache))
+  (let ((tmp-config-fullpath (concat (cdr (project-current)) in-cache))
         ;; Read file to buffer.
         (tmp-path-buffer "")
         ;; Split `tmp-path-buffer', from the file.
@@ -659,7 +626,7 @@ IN-CACHE : cache file name relative to project root folder."
                (organize-imports-java-reload-paths)))))
 
     ;; Read file to buffer.
-    (setq tmp-path-buffer (organize-imports-java-get-string-from-file tmp-config-fullpath))
+    (setq tmp-path-buffer (organize-imports-java--get-string-from-file tmp-config-fullpath))
 
     ;; Make the path buffer back to list.
     ;;
@@ -671,16 +638,14 @@ IN-CACHE : cache file name relative to project root folder."
     ;; Return all the path from list.
     tmp-path-list))
 
-(defun organize-imports-java-insert-paths (in-paths)
-  "Insert the paths.
-IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
+(defun organize-imports-java--insert-paths (in-paths)
+  "Insert the IN-PATHS."
   (let (;; Loop the data once and split into alphabetic order.
         ;; List-Len = (Alphabet Id - 1).
         ;; 0 = A, 1 = B, 2 = C, etc.
         (alphabet-list-first '())
         ;; List will do the final insert.
         (insert-path-list '()))
-
     ;; Reset alphabetic list.
     (setq alphabet-list-first '())
 
@@ -697,10 +662,8 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
     (dolist (tmp-path in-paths)
       (let ((tmp-split-path-list '())
             ;; Usually the class name data.
-            (tmp-last-element "")
-            (first-char-from-path nil)
-            (alphabet-id -1)
-            (alphabet-list nil))
+            (tmp-last-element "") (first-char-from-path nil)
+            (alphabet-id -1) (alphabet-list nil))
 
         ;; split the string into list
         (setq tmp-split-path-list (split-string tmp-path "\\."))
@@ -745,12 +708,12 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
     ;; will do the job.
     (let ((tmp-same-class-name-list-length -1)
           ;; Get all the `class-name'/`font-lock-type' from current buffer.
-          (type-name-list (organize-imports-java-get-type-face-keywords-by-face-name
+          (type-name-list (organize-imports-java--get-type-face-keywords-by-face-name
                            organize-imports-java-font-lock-type-faces)))
       (dolist (tmp-type-class-keyword type-name-list)
         ;; Exclude the general data type. (String, Integer, etc.)
         (when (not (organize-imports-java--is-in-list-string organize-imports-java-unsearch-class-type
-                                                            tmp-type-class-keyword))
+                                                             tmp-type-class-keyword))
           (let (;; Choose one list from `alphabet-list-first',
                 ;; depends on alphabet id.
                 (alphabet-list nil)
@@ -775,8 +738,7 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
             (let ((alphabet-list-index 0)
                   (alphabet-list-length (length alphabet-list)))
               (while (< alphabet-list-index alphabet-list-length)
-                (let ((tmp-class-name "")
-                      (tmp-full-path ""))
+                (let ((tmp-class-name "") (tmp-full-path ""))
                   ;; Get class name from the sorted alphabet list.
                   (setq tmp-class-name (nth (1+ alphabet-list-index) alphabet-list))
 
@@ -817,7 +779,7 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
                    ;; Is is more than 2 results. Meaning we
                    ;; need the user to select which class
                    ;; to import!
-                   (call-interactively 'organize-imports-java-same-class-ask))))
+                   (call-interactively 'organize-imports-java--same-class-ask))))
 
           ;; Clean the same class paths for next loop.
           (setq organize-imports-java-same-class-name-list '()))))
@@ -851,7 +813,7 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
               (position-in-priority-list -1))
           ;; NOTE: if `cl-position' not found will return nil.
           (setq position-in-priority-list
-                (organize-imports-java-string-match-position
+                (organize-imports-java--string-match-position
                  organize-imports-java-priority-list
                  insert-path))
 
@@ -869,8 +831,7 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
               (push insert-path priority-list)
 
               ;; apply to the two dimensional array.
-              (setf (nth position-in-priority-list
-                         priority-index-list)
+              (setf (nth position-in-priority-list priority-index-list)
                     priority-list)))))
 
       ;; ▾▾▾▾▾▾▾▾▾▾ Reverse all the list. ▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾
@@ -890,7 +851,7 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
 
       ;; First set to the priority list, don't forget to flatten the two
       ;; dimensional array.
-      (setq insert-path-list (organize-imports-java-flatten-list priority-index-list))
+      (setq insert-path-list (organize-imports-java--flatten-list priority-index-list))
       ;; Then append the rest of the path listt.
       (setq insert-path-list (append insert-path-list else-path-list)))
 
@@ -918,16 +879,15 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
           ;; the first element is always the class name.
           (setq tmp-first-element (nth 0 tmp-split-path-list))
 
-          (when (not (string= tmp-first-element tmp-record-first-element))
+          (unless (string= tmp-first-element tmp-record-first-element)
             (insert "\n")
-
             ;; record it down.
             (setq tmp-record-first-element tmp-first-element))
 
-          (organize-imports-java-insert-import-lib tmp-in-path)))
+          (organize-imports-java--insert-import-lib tmp-in-path)))
 
       ;; keep one line.
-      (organize-imports-java-keep-one-line-between))))
+      (organize-imports-java--keep-one-line-between))))
 
 
 ;;;###autoload
@@ -944,18 +904,18 @@ IN-PATHS : List of all paths from all cache.  Should be pretty giant list."
       ;; Add the local source path from local source cache.
       (setq all-lib-paths
             (append all-lib-paths
-                    (organize-imports-java-get-paths-from-cache
+                    (organize-imports-java--get-paths-from-cache
                      ;; Local source.
                      organize-imports-java-path-local-source-cache-file)))
       ;; Get the external source path from external source cache.
       (setq all-lib-paths
             (append all-lib-paths
-                    (organize-imports-java-get-paths-from-cache
+                    (organize-imports-java--get-paths-from-cache
                      ;; External source.
                      organize-imports-java-path-jar-lib-cache-file)))
 
       ;; Do insert.
-      (organize-imports-java-insert-paths all-lib-paths))))
+      (organize-imports-java--insert-paths all-lib-paths))))
 
 
 (provide 'organize-imports-java)
