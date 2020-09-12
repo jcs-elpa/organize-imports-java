@@ -301,11 +301,13 @@ IN-KEY : key to search for value."
         (setq pos (match-end 0)))
       matches)))
 
-(defun organize-imports-java--flatten-list (l)
-  "Flatten the multiple dimensional array (L) to one dimensonal array."
-  (cond ((null l) nil)
-        ((atom l) (list l))
-        (t (loop for a in l appending (organize-imports-java--flatten-list a)))))
+(defun organize-imports-java--flatten-list (lst)
+  "Flatten the multiple dimensional array, LST to one dimensonal array.
+For instance, '(1 2 3 4 (5 6 7 8)) => '(1 2 3 4 5 6 7 8)."
+  (cond
+   ((null lst) nil)
+   ((atom lst) (list lst))
+   (t (append (organize-imports-java--flatten-list (car lst)) (organize-imports-java--flatten-list (cdr lst))))))
 
 (defun organize-imports-java-get-local-source ()
   "Get the all the local source file path as a list."
@@ -435,8 +437,8 @@ IN-KEY : key to search for value."
 For .jar files."
   (interactive)
   ;; Make sure the .ini/.properties file exists before making the cache file.
-  (let ((cofig-fp (concat (cdr (project-current)) organize-imports-java-lib-inc-file)))
-    (if (not (file-exists-p cofig-fp))
+  (let ((config-fp (concat (cdr (project-current)) organize-imports-java-lib-inc-file)))
+    (if (not (file-exists-p config-fp))
         (user-error "%s"
                     (propertize
                      (format "Include jar path file missing: %s" config-fp)
