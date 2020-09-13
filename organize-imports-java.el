@@ -7,7 +7,7 @@
 ;; Description: Automatically organize imports in Java code.
 ;; Keyword: organize imports java handy eclipse
 ;; Version: 0.2.0
-;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0"))
+;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0") (dash "2.14.1"))
 ;; URL: https://github.com/jcs-elpa/organize-imports-java
 
 ;; This file is NOT part of GNU Emacs.
@@ -153,6 +153,10 @@
   "Debug message like function `message' with same argument FMT and ARGS."
   (organize-imports-java--no-log-apply (apply 'message fmt args)))
 
+(defun organize-imports-java--project-dir ()
+  "Get the current project directory."
+  (cdr (project-current)))
+
 (defun organize-imports-java--get-alphabet-id (c)
   "Get the alphabet id.
 C : character to find the alphabet id."
@@ -233,7 +237,7 @@ If you want to keep more than one line use
 
 (defun organize-imports-java--erase-file (in-filename)
   "Erase IN-FILENAME relative to project root."
-  (write-region "" nil (concat (cdr (project-current)) in-filename) nil))
+  (write-region "" nil (concat (organize-imports-java--project-dir) in-filename) nil))
 
 ;;; Parse INI
 
@@ -301,19 +305,11 @@ IN-KEY : key to search for value."
         (setq pos (match-end 0)))
       matches)))
 
-(defun organize-imports-java--flatten-list (lst)
-  "Flatten the multiple dimensional array, LST to one dimensonal array.
-For instance, '(1 2 3 4 (5 6 7 8)) => '(1 2 3 4 5 6 7 8)."
-  (cond
-   ((null lst) nil)
-   ((atom lst) (list lst))
-   (t (append (organize-imports-java--flatten-list (car lst)) (organize-imports-java--flatten-list (cdr lst))))))
-
 (defun organize-imports-java-get-local-source ()
   "Get the all the local source file path as a list."
   (let* ((src-file-path-list '())
-         (project-dir (cdr (project-current)))
-         (project-source-dir (concat project-dir organize-imports-java-source-dir-name "/")))
+         (project-source-dir (concat (organize-imports-java--project-dir)
+                                     organize-imports-java-source-dir-name "/")))
     (setq src-file-path-list (f--files project-source-dir
                                        (and (string= (f-ext it) "java")
                                             (not (string-match-p "#" (f-filename it))))
@@ -348,7 +344,7 @@ For instance, '(1 2 3 4 (5 6 7 8)) => '(1 2 3 4 5 6 7 8)."
 (defun organize-imports-java-unzip-lib ()
   "Decode it `.jar' binary to readable data strucutre."
   (let ((tmp-lib-inc-file (concat
-                           (cdr (project-current))
+                           (organize-imports-java--project-dir)
                            organize-imports-java-lib-inc-file))
         (tmp-lib-list '())
         ;; Value read from the .ini/.properties file.
@@ -388,7 +384,8 @@ For instance, '(1 2 3 4 (5 6 7 8)) => '(1 2 3 4 5 6 7 8)."
          ;; absolute path instead of version control relative path.
          ((string= first-char-from-path ".")
           ;; Modefied path to version control path.
-          (setq tmp-lib-path (concat (cdr (project-current)) tmp-lib-path)))
+          (setq tmp-lib-path (concat (organize-imports-java--project-dir)
+                                     tmp-lib-path)))
          ;; Swap #SDK_PATH# to valid Java SDK path, if contain.
          ((organize-imports-java--contain-string organize-imports-java-inc-keyword
                                                  tmp-lib-path)
@@ -437,7 +434,8 @@ For instance, '(1 2 3 4 (5 6 7 8)) => '(1 2 3 4 5 6 7 8)."
 For .jar files."
   (interactive)
   ;; Make sure the .ini/.properties file exists before making the cache file.
-  (let ((config-fp (concat (cdr (project-current)) organize-imports-java-lib-inc-file)))
+  (let ((config-fp (concat (organize-imports-java--project-dir)
+                           organize-imports-java-lib-inc-file)))
     (if (not (file-exists-p config-fp))
         (user-error "%s"
                     (propertize
@@ -449,7 +447,7 @@ For .jar files."
 
       ;; Flatten it.
       (setq organize-imports-java--path-buffer-jar-lib
-            (organize-imports-java--flatten-list organize-imports-java--path-buffer-jar-lib))
+            (-flatten organize-imports-java--path-buffer-jar-lib))
 
       ;; Remove duplicates value from list.
       (setq organize-imports-java--path-buffer-jar-lib
@@ -470,7 +468,7 @@ Usually Java files under project root 'src' directory."
 
   ;; Flatten it.
   (setq organize-imports-java--path-buffer-local-source
-        (organize-imports-java--flatten-list organize-imports-java--path-buffer-local-source))
+        (-flatten organize-imports-java--path-buffer-local-source))
 
   ;; Remove duplicates value from list.
   (setq organize-imports-java--path-buffer-local-source
@@ -523,12 +521,12 @@ IN-FILENAME : name of the cache file."
     ;; Write to file all at once.
     (write-region tmp-write-to-file-content-buffer
                   nil
-                  (concat (cdr (project-current)) in-filename)
+                  (concat (organize-imports-java--project-dir) in-filename)
                   t)))
 
 (defun organize-imports-java-get-faces (pos)
   "Get the font faces at POS."
-  (organize-imports-java--flatten-list
+  (-flatten
    (remq nil
          (list
           (get-char-property pos 'read-face-name)
@@ -612,25 +610,22 @@ TYPE : path string will be store at."
 (defun organize-imports-java--get-paths-from-cache (in-cache)
   "Return the list of path from IN-CHACHE.
 IN-CACHE : cache file name relative to project root folder."
-  (let ((tmp-config-fullpath (concat (cdr (project-current)) in-cache))
+  (let ((tmp-config-fullpath (concat (organize-imports-java--project-dir) in-cache))
         ;; Read file to buffer.
         (tmp-path-buffer "")
         ;; Split `tmp-path-buffer', from the file.
         (tmp-path-list '()))
     ;; If the file does not exists, load the Java path once.
     ;; Get this plugin ready to use.
-    (when (not (file-exists-p tmp-config-fullpath))
+    (unless (file-exists-p tmp-config-fullpath)
       (cond ((string= in-cache organize-imports-java-path-jar-lib-cache-file)
-             (progn
-               (organize-imports-java-reload-jar-lib-paths)))
+             (organize-imports-java-reload-jar-lib-paths))
             ((string= in-cache organize-imports-java-path-local-source-cache-file)
-             (progn
-               (organize-imports-java-reload-local-source-paths)))
+             (organize-imports-java-reload-local-source-paths))
             (t
-             (progn
-               ;; Reload all the cache file as default. Even though this
-               ;; should not happens.
-               (organize-imports-java-reload-paths)))))
+             ;; Reload all the cache file as default. Even though this
+             ;; should not happens.
+             (organize-imports-java-reload-paths))))
 
     ;; Read file to buffer.
     (setq tmp-path-buffer (organize-imports-java--get-string-from-file tmp-config-fullpath))
@@ -678,7 +673,7 @@ IN-CACHE : cache file name relative to project root folder."
         ;; the last element is usually the class name.
         (setq tmp-last-element (nth (1- (length tmp-split-path-list)) tmp-split-path-list))
 
-        (when (and (not (string= tmp-last-element ""))
+        (when (and (not (string-empty-p tmp-last-element))
                    ;; Exclude current buffer file name because own file
                    ;; cannot be inserted. Is illegal in Java programming.
                    (not (string= tmp-last-element
@@ -691,7 +686,7 @@ IN-CACHE : cache file name relative to project root folder."
           ;; get the alphabet id, which is the same as array id.
           (setq alphabet-id (organize-imports-java--get-alphabet-id first-char-from-path))
 
-          (when (not (= alphabet-id -1))
+          (unless (= alphabet-id -1)
             ;; get the current alphabet list.
             (setf alphabet-list (nth alphabet-id alphabet-list-first))
 
@@ -719,13 +714,10 @@ IN-CACHE : cache file name relative to project root folder."
                            organize-imports-java-font-lock-type-faces)))
       (dolist (tmp-type-class-keyword type-name-list)
         ;; Exclude the general data type. (String, Integer, etc.)
-        (when (not (organize-imports-java--is-in-list-string organize-imports-java-unsearch-class-type
-                                                             tmp-type-class-keyword))
-          (let (;; Choose one list from `alphabet-list-first',
-                ;; depends on alphabet id.
-                (alphabet-list nil)
-                (alphabet-id -1)
-                (tmp-class-name-first-char ""))
+        (unless (organize-imports-java--is-in-list-string
+                 organize-imports-java-unsearch-class-type tmp-type-class-keyword)
+          (let (;; Choose one list from `alphabet-list-first', depends on alphabet id.
+                (alphabet-list nil) (alphabet-id -1) (tmp-class-name-first-char ""))
 
             ;; Get the first character from the class
             ;; name keyword.
@@ -824,22 +816,18 @@ IN-CACHE : cache file name relative to project root folder."
                  organize-imports-java--priority-list
                  insert-path))
 
-          (if (equal position-in-priority-list nil)
-              ;; When not found.
-              (progn
-                (push insert-path else-path-list))
-            ;; When found.
-            (progn
-              ;; Get the priority list from the `priority-index-list'.
-              (setf priority-list (nth position-in-priority-list
-                                       priority-index-list))
+          (if (null position-in-priority-list)
+              (push insert-path else-path-list)
+            ;; Get the priority list from the `priority-index-list'.
+            (setf priority-list (nth position-in-priority-list
+                                     priority-index-list))
 
-              ;; Add it to prority index list by the priority/id/position.
-              (push insert-path priority-list)
+            ;; Add it to prority index list by the priority/id/position.
+            (push insert-path priority-list)
 
-              ;; apply to the two dimensional array.
-              (setf (nth position-in-priority-list priority-index-list)
-                    priority-list)))))
+            ;; apply to the two dimensional array.
+            (setf (nth position-in-priority-list priority-index-list)
+                  priority-list))))
 
       ;; ▾▾▾▾▾▾▾▾▾▾ Reverse all the list. ▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾▾
       ;; STUDY: Other way to do this, is instead of use `push'. Use some
@@ -858,7 +846,7 @@ IN-CACHE : cache file name relative to project root folder."
 
       ;; First set to the priority list, don't forget to flatten the two
       ;; dimensional array.
-      (setq insert-path-list (organize-imports-java--flatten-list priority-index-list))
+      (setq insert-path-list (-flatten priority-index-list))
       ;; Then append the rest of the path listt.
       (setq insert-path-list (append insert-path-list else-path-list)))
 
@@ -896,7 +884,6 @@ IN-CACHE : cache file name relative to project root folder."
       ;; keep one line.
       (organize-imports-java--keep-one-line-between))))
 
-
 ;;;###autoload
 (defun organize-imports-java-do-imports ()
   "Do the functionalitiies of how organize imports work."
@@ -923,7 +910,6 @@ IN-CACHE : cache file name relative to project root folder."
 
       ;; Do insert.
       (organize-imports-java--insert-paths all-lib-paths))))
-
 
 (provide 'organize-imports-java)
 ;;; organize-imports-java.el ends here
