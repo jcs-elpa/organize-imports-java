@@ -769,16 +769,12 @@ IN-CACHE : cache file name relative to project root folder."
           ;; to the final insert path list.
           ;; IMPORTANT: Here is where you actually add the inserted path
           (cond ((= tmp-same-class-name-list-length 1)
-                 (progn
-                   ;; Is exactly 1 result. Just add that to the
-                   ;; final pre-insert list.
-                   (push (nth 0 organize-imports-java--same-class-name-list) insert-path-list)))
+                 ;; Is exactly 1 result. Just add that to the final pre-insert list.
+                 (push (nth 0 organize-imports-java--same-class-name-list) insert-path-list))
                 ((>= tmp-same-class-name-list-length 2)
-                 (progn
-                   ;; Is is more than 2 results. Meaning we
-                   ;; need the user to select which class
-                   ;; to import!
-                   (call-interactively 'organize-imports-java--same-class-ask))))
+                 ;; Is is more than 2 results. Meaning we need the user to
+                 ;; select which class to import!
+                 (call-interactively 'organize-imports-java--same-class-ask)))
 
           ;; Clean the same class paths for next loop.
           (setq organize-imports-java--same-class-name-list '()))))
@@ -808,8 +804,7 @@ IN-CACHE : cache file name relative to project root folder."
 
       ;; Sort list with priority list.
       (dolist (insert-path insert-path-list)
-        (let (;; Position is also the index/id.
-              (position-in-priority-list -1))
+        (let ((position-in-priority-list -1))  ; Position is also the index/id.
           ;; NOTE: if `cl-position' not found will return nil.
           (setq position-in-priority-list
                 (organize-imports-java--string-match-position
@@ -864,10 +859,8 @@ IN-CACHE : cache file name relative to project root folder."
 
       ;; Insert all import path line.
       (let ((tmp-split-path-list '())
-            (tmp-first-element "")
-            (tmp-record-first-element ""))
+            (tmp-first-element "") (tmp-record-first-element ""))
         (dolist (tmp-in-path insert-path-list)
-
           ;; split the path into list by using `.' delimiter.
           (setq tmp-split-path-list (split-string tmp-in-path "\\."))
 
@@ -891,23 +884,18 @@ IN-CACHE : cache file name relative to project root folder."
   (save-excursion
     ;; Clear all imports before insert new imports.
     (organize-imports-java-clear-all-imports)
-
-    (let (;; Path have all the classpath from local and external cache.
-          (all-lib-paths '()))
-
+    ;; Path have all the classpath from local and external cache.
+    (let ((all-lib-paths '()))
       ;; Add the local source path from local source cache.
       (setq all-lib-paths
             (append all-lib-paths
                     (organize-imports-java--get-paths-from-cache
-                     ;; Local source.
                      organize-imports-java-path-local-source-cache-file)))
       ;; Get the external source path from external source cache.
       (setq all-lib-paths
             (append all-lib-paths
                     (organize-imports-java--get-paths-from-cache
-                     ;; External source.
                      organize-imports-java-path-jar-lib-cache-file)))
-
       ;; Do insert.
       (organize-imports-java--insert-paths all-lib-paths))))
 
