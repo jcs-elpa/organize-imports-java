@@ -881,23 +881,24 @@ IN-CACHE : cache file name relative to project root folder."
 (defun organize-imports-java-do-imports ()
   "Do the functionalitiies of how organize imports work."
   (interactive)
-  (save-excursion
-    ;; Clear all imports before insert new imports.
-    (organize-imports-java-clear-all-imports)
-    ;; Path have all the classpath from local and external cache.
-    (let ((all-lib-paths '()))
-      ;; Add the local source path from local source cache.
-      (setq all-lib-paths
-            (append all-lib-paths
-                    (organize-imports-java--get-paths-from-cache
-                     organize-imports-java-path-local-source-cache-file)))
-      ;; Get the external source path from external source cache.
-      (setq all-lib-paths
-            (append all-lib-paths
-                    (organize-imports-java--get-paths-from-cache
-                     organize-imports-java-path-jar-lib-cache-file)))
-      ;; Do insert.
-      (organize-imports-java--insert-paths all-lib-paths))))
+  (save-window-excursion
+    (save-excursion
+      ;; Clear all imports before insert new imports.
+      (organize-imports-java-clear-all-imports)
+      ;; Path have all the classpath from local and external cache.
+      (let ((all-lib-paths '()))
+        ;; Add the local source path from local source cache.
+        (setq all-lib-paths
+              (append all-lib-paths
+                      (organize-imports-java--get-paths-from-cache
+                       organize-imports-java-path-local-source-cache-file)))
+        ;; Get the external source path from external source cache.
+        (setq all-lib-paths
+              (append all-lib-paths
+                      (organize-imports-java--get-paths-from-cache
+                       organize-imports-java-path-jar-lib-cache-file)))
+        ;; Do insert.
+        (organize-imports-java--insert-paths all-lib-paths)))))
 
 (provide 'organize-imports-java)
 ;;; organize-imports-java.el ends here
