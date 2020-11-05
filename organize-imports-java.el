@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Automatically organize imports in Java code.
 ;; Keyword: organize imports java handy eclipse
-;; Version: 0.2.3
+;; Version: 0.2.4
 ;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0") (dash "2.14.1"))
 ;; URL: https://github.com/jcs-elpa/organize-imports-java
 
