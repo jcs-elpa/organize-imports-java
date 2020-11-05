@@ -39,6 +39,7 @@
 (require 'cl-lib)
 (require 'f)
 (require 's)
+(require 'subr-x)
 
 (defgroup organize-imports-java nil
   "Organize imports java extension"
