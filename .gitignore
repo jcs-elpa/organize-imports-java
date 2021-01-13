@@ -1,5 +1,6 @@
 # ignore these directories.
 /.git
+/.oij
 /recipes
 /oij_examples
 /src
