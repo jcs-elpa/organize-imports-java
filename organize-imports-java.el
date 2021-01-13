@@ -244,8 +244,7 @@ If you want to keep more than one line use
 
 (defun organize-imports-java--erase-file (in-filename)
   "Erase IN-FILENAME relative to project root."
-  (let ((target-file (concat (organize-imports-java--project-dir) in-filename)))
-    (when (file-exists-p target-file) (write-region "" nil target-file nil))))
+  (write-region "" nil (concat (organize-imports-java--project-dir) in-filename) nil))
 
 ;;; Parse INI
 
@@ -657,10 +656,6 @@ IN-CACHE : cache file name relative to project root folder."
         tmp-path-buffer
         ;; Split `tmp-path-buffer', from the file.
         tmp-path-list)
-    ;; Ensure oij cache directory exists.
-    (ignore-errors
-      (make-directory
-       (concat (organize-imports-java--project-dir) organize-imports-java-oij-dir)))
     ;; If the file does not exists, load the Java path once.
     ;; Get this plugin ready to use.
     (unless (file-exists-p tmp-cache)
@@ -930,6 +925,10 @@ IN-CACHE : cache file name relative to project root folder."
   (interactive)
   (if (not (organize-imports-java--project-dir))
       (user-error "[WARNING] Can't organize imports without project root")
+    ;; Ensure oij cache directory exists.
+    (ignore-errors
+      (make-directory
+       (concat (organize-imports-java--project-dir) organize-imports-java-oij-dir)))
     ;; Make sure oij configuration file exists before organize imports task.
     (organize-imports-java--create-default-oij-config)
     (organize-imports-java--record-project-ht)
