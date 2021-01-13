@@ -83,27 +83,16 @@
   :group 'organize-imports-java)
 
 (defcustom organize-imports-java-unsearch-class-type
-  '("Boolean"
-    "boolean"
-    "Byte"
-    "byte"
-    "Character"
-    "char"
-    "Double"
-    "double"
-    "Float"
-    "float"
-    "Integer"
-    "integer"
-    "int"
-    "Long"
-    "long"
-    "String"
-    "string"
-    "Short"
-    "short"
-    "Void"
-    "void")
+  '("Boolean" "boolean"
+    "Byte" "byte"
+    "Character" "char"
+    "Double" "double"
+    "Float" "float"
+    "Integer" "integer" "int"
+    "Long" "long"
+    "String" "string"
+    "Short" "short"
+    "Void" "void")
   "Class types that do not need to imports any library path."
   :type 'list
   :group 'organize-imports-java)
