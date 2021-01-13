@@ -7,7 +7,7 @@
 ;; Description: Automatically organize imports in Java code.
 ;; Keyword: organize imports java handy eclipse
 ;; Version: 0.2.5
-;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0") (dash "2.14.1") (ht "2.2")
+;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0") (dash "2.14.1") (ht "2.2"))
 ;; URL: https://github.com/jcs-elpa/organize-imports-java
 
 ;; This file is NOT part of GNU Emacs.
@@ -314,9 +314,8 @@ IN-KEY : key to search for value."
          (old-content (ht-get organize-imports-java--project-oij key))
          (new-content (organize-imports-java--oij-content)))
     (unless (string= old-content new-content)
-      ;; TODO: force refresh
-      )
-    (ht-set organize-imports-java--project-oij key new-content)))
+      (organize-imports-java-reload-paths)  ; Refresh cache paths.
+      (ht-set organize-imports-java--project-oij key new-content))))
 
 ;;; Core
 
