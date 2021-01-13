@@ -240,11 +240,12 @@ If you want to keep more than one line use
   "Return PATH's file content."
   (if (file-exists-p path)
       (with-temp-buffer (insert-file-contents path) (buffer-string))
-    nil))
+    ""))
 
 (defun organize-imports-java--erase-file (in-filename)
   "Erase IN-FILENAME relative to project root."
-  (write-region "" nil (concat (organize-imports-java--project-dir) in-filename) nil))
+  (let ((target-file (concat (organize-imports-java--project-dir) in-filename)))
+    (when (file-exists-p target-file) (write-region "" nil target-file nil))))
 
 ;;; Parse INI
 
@@ -305,15 +306,17 @@ IN-KEY : key to search for value."
 
 (defun organize-imports-java--oij-content ()
   "Return oij content in MD5 format."
-  (md5 (organize-imports-java--get-string-from-file
-        (organize-imports-java--config-path))))
+  (let ((new-content (organize-imports-java--get-string-from-file
+                      (organize-imports-java--config-path))))
+    (when new-content (md5 new-content))))
 
 (defun organize-imports-java--record-project-ht ()
   "Record current project to oij content once."
   (let* ((key (organize-imports-java--project-dir))
          (old-content (ht-get organize-imports-java--project-oij key))
          (new-content (organize-imports-java--oij-content)))
-    (unless (string= old-content new-content)
+    (when (and (stringp old-content) (stringp new-content)
+               (not (string= old-content new-content)))
       (organize-imports-java-reload-paths)  ; Refresh cache paths.
       (ht-set organize-imports-java--project-oij key new-content))))
 
@@ -674,7 +677,7 @@ IN-CACHE : cache file name relative to project root folder."
     ;; Read file to buffer.
     (setq tmp-path-buffer (organize-imports-java--get-string-from-file tmp-cache))
 
-    (unless (string-empty-p tmp-path-buffer)
+    (when (stringp tmp-path-buffer)
       ;; Make the path buffer back to list.
       ;;
       ;; Why I use the word 'back'? Because when we make our
