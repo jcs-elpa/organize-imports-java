@@ -207,9 +207,7 @@ When not found return nil."
 
 (defun organize-imports-java--current-line-empty-p ()
   "Current line empty, but accept spaces/tabs in there.  (not absolute)."
-  (save-excursion
-    (beginning-of-line)
-    (looking-at "[[:space:]\t]*$")))
+  (save-excursion (beginning-of-line) (looking-at "[[:space:]\t]*$")))
 
 (defun organize-imports-java--keep-one-line-between ()
   "Keep one line between the two line of code.
@@ -226,9 +224,7 @@ If you want to keep more than one line use
 
 (defun organize-imports-java--get-string-from-file (file-path)
   "Return FILE-PATH's file content."
-  (with-temp-buffer
-    (insert-file-contents file-path)
-    (buffer-string)))
+  (with-temp-buffer (insert-file-contents file-path) (buffer-string)))
 
 (defun organize-imports-java--erase-file (in-filename)
   "Erase IN-FILENAME relative to project root."
@@ -432,10 +428,16 @@ For .jar files."
   (let ((config-fp (concat (organize-imports-java--project-dir)
                            organize-imports-java-lib-inc-file)))
     (if (not (file-exists-p config-fp))
-        (user-error "%s"
-                    (propertize
-                     (format "Include jar path file missing: %s" config-fp)
-                     'face '(:foreground "cyan")))
+        (progn
+          (if (y-or-n-p (format "Missing the %s in project root directory, create one? "
+                                organize-imports-java-lib-inc-file))
+              (write-region
+               (organize-imports-java--get-string-from-file organize-imports-java--default-oij-config)
+               nil config-fp)
+            (user-error "[WARNING] %s"
+                        (propertize
+                         (format "Include jar path file missing: %s" config-fp)
+                         'face '(:foreground "cyan")))))
       ;; Import all libs/jars.
       (setq organize-imports-java--path-buffer-jar-lib
             (organize-imports-java-unzip-lib))
