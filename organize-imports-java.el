@@ -76,7 +76,8 @@
   :type 'string
   :group 'organize-imports-java)
 
-(defcustom organize-imports-java-font-lock-type-faces '("font-lock-type-face")
+(defcustom organize-imports-java-font-lock-type-faces
+  '("font-lock-type-face" "tree-sitter-hl-face:type")
   "List of type font face that current Jave mode applied to use."
   :type 'list
   :group 'organize-imports-java)
