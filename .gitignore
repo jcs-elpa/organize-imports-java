@@ -9,10 +9,6 @@ organize-imports-java-pkg.el
 # ignore generated files.
 *.elc
 
-# ignore I use to not ignore.
-Update_Log.txt
-TODO(jenchieh).txt
-
 # ignore example/test files.
 oij.config
 *.oij
