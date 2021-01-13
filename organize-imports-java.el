@@ -7,7 +7,7 @@
 ;; Description: Automatically organize imports in Java code.
 ;; Keyword: organize imports java handy eclipse
 ;; Version: 0.2.5
-;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0") (dash "2.14.1"))
+;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0") (dash "2.14.1") (ht "2.2")
 ;; URL: https://github.com/jcs-elpa/organize-imports-java
 
 ;; This file is NOT part of GNU Emacs.
@@ -39,6 +39,7 @@
 (require 'cl-lib)
 (require 'f)
 (require 's)
+(require 'ht)
 (require 'subr-x)
 
 (defgroup organize-imports-java nil
@@ -144,6 +145,11 @@
 (defvar organize-imports-java--default-oij-config
   (expand-file-name "default/oij.config" organize-imports-java--home-dir)
   "Default oij.config file path.")
+
+(defvar organize-imports-java--project-oij (ht-create)
+  "List of project to oij configuraion.
+
+This is use to detect changes from oij configuraion file.")
 
 ;;; Util
 
@@ -295,11 +301,32 @@ IN-KEY : key to search for value."
     ;; Found nothing, return empty string.
     returns-value))
 
+;;; Project
+
+(defun organize-imports-java--oij-content ()
+  "Return oij content in MD5 format."
+  (md5 (organize-imports-java--get-string-from-file
+        (organize-imports-java--config-path))))
+
+(defun organize-imports-java--record-project-ht ()
+  "Record current project to oij content once."
+  (let* ((key (organize-imports-java--project-dir))
+         (old-content (ht-get organize-imports-java--project-oij key))
+         (new-content (organize-imports-java--oij-content)))
+    (unless (string= old-content new-content)
+      ;; TODO: force refresh
+      )
+    (ht-set organize-imports-java--project-oij key new-content)))
+
 ;;; Core
 
 (defun organize-imports-java--oij-dir (in-filename)
   "Return full file path for oij cache file IN-FILENAME."
   (concat organize-imports-java-oij-dir in-filename))
+
+(defun organize-imports-java--config-path ()
+  "Return oij configuration file path."
+  (concat (organize-imports-java--project-dir) organize-imports-java-lib-inc-file))
 
 (defun organize-imports-java--re-seq (regexp string)
   "Get a list of all REGEXP match in a STRING."
@@ -348,9 +375,7 @@ IN-KEY : key to search for value."
 
 (defun organize-imports-java-unzip-lib ()
   "Decode it `.jar' binary to readable data strucutre."
-  (let ((tmp-lib-inc-file (concat
-                           (organize-imports-java--project-dir)
-                           organize-imports-java-lib-inc-file))
+  (let ((tmp-lib-inc-file (organize-imports-java--config-path))
         (tmp-lib-list '())
         ;; Value read from the .ini/.properties file.
         (tmp-lib-path "")
@@ -437,8 +462,7 @@ IN-KEY : key to search for value."
 
 (defun organize-imports-java--create-default-oij-config ()
   "Create default oij configuration file."
-  (let ((config-fp (concat (organize-imports-java--project-dir)
-                           organize-imports-java-lib-inc-file)))
+  (let ((config-fp (organize-imports-java--config-path)))
     (unless (file-exists-p config-fp)
       (if (y-or-n-p (format "Missing the %s in project root directory, create one? "
                             organize-imports-java-lib-inc-file))
@@ -454,9 +478,6 @@ IN-KEY : key to search for value."
   "Reload external Java paths.
 For .jar files."
   (interactive)
-  ;; Make sure the .ini/.properties file exists before making the cache file.
-  (organize-imports-java--create-default-oij-config)
-
   ;; Import all libs/jars.
   (setq organize-imports-java--path-buffer-jar-lib
         (organize-imports-java-unzip-lib))
@@ -479,9 +500,6 @@ For .jar files."
   "Reload internal Java paths.
 Usually Java files under project root 'src' directory."
   (interactive)
-  ;; Make sure the .ini/.properties file exists before making the cache file.
-  (organize-imports-java--create-default-oij-config)
-
   ;; Import local source files. File that isn't a jar/lib file.
   (setq organize-imports-java--path-buffer-local-source
         (organize-imports-java-get-local-source))
@@ -909,21 +927,26 @@ IN-CACHE : cache file name relative to project root folder."
 (defun organize-imports-java-do-imports ()
   "Do the functionalitiies of how organize imports work."
   (interactive)
-  (save-window-excursion
-    (save-excursion
-      ;; Path have all the classpath from local and external cache.
-      (let* (;; Add the local source path from local source cache.
-             (local-paths (organize-imports-java--get-paths-from-cache
-                           organize-imports-java-path-local-source-cache-file))
-             ;; Get the external source path from external source cache.
-             (jar-lib-paths (organize-imports-java--get-paths-from-cache
-                             organize-imports-java-path-jar-lib-cache-file))
-             (all-lib-paths (append local-paths jar-lib-paths)))
-        (unless (= 0 (length all-lib-paths))
-          ;; Clear all imports before insert new imports.
-          (organize-imports-java-clear-all-imports)
-          ;; Do insert.
-          (organize-imports-java--insert-paths all-lib-paths))))))
+  (if (not (organize-imports-java--project-dir))
+      (user-error "[WARNING] Can't organize imports without project root")
+    ;; Make sure oij configuration file exists before organize imports task.
+    (organize-imports-java--create-default-oij-config)
+    (organize-imports-java--record-project-ht)
+    (save-window-excursion
+      (save-excursion
+        ;; Path have all the classpath from local and external cache.
+        (let* (;; Add the local source path from local source cache.
+               (local-paths (organize-imports-java--get-paths-from-cache
+                             organize-imports-java-path-local-source-cache-file))
+               ;; Get the external source path from external source cache.
+               (jar-lib-paths (organize-imports-java--get-paths-from-cache
+                               organize-imports-java-path-jar-lib-cache-file))
+               (all-lib-paths (append local-paths jar-lib-paths)))
+          (unless (= 0 (length all-lib-paths))
+            ;; Clear all imports before insert new imports.
+            (organize-imports-java-clear-all-imports)
+            ;; Do insert.
+            (organize-imports-java--insert-paths all-lib-paths)))))))
 
 (provide 'organize-imports-java)
 ;;; organize-imports-java.el ends here
