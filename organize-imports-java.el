@@ -315,8 +315,7 @@ IN-KEY : key to search for value."
   (let* ((key (organize-imports-java--project-dir))
          (old-content (ht-get organize-imports-java--project-oij key))
          (new-content (organize-imports-java--oij-content)))
-    (when (and (stringp old-content) (stringp new-content)
-               (not (string= old-content new-content)))
+    (unless (equal old-content new-content)
       (organize-imports-java-reload-paths)  ; Refresh cache paths.
       (ht-set organize-imports-java--project-oij key new-content))))
 
