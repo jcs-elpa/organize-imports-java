@@ -226,7 +226,7 @@ If you want to keep more than one line use
   "Return PATH's file content."
   (if (file-exists-p path)
       (with-temp-buffer (insert-file-contents path) (buffer-string))
-    ""))
+    nil))
 
 (defun organize-imports-java--erase-file (in-filename)
   "Erase IN-FILENAME relative to project root."
@@ -421,48 +421,52 @@ IN-KEY : key to search for value."
   (organize-imports-java-reload-jar-lib-paths)
   (organize-imports-java-reload-local-source-paths))
 
+(defun organize-imports-java--create-default-oij-config ()
+  "Create default oij configuration file."
+  (let ((config-fp (concat (organize-imports-java--project-dir)
+                           organize-imports-java-lib-inc-file)))
+    (unless (file-exists-p config-fp)
+      (if (y-or-n-p (format "Missing the %s in project root directory, create one? "
+                            organize-imports-java-lib-inc-file))
+          (progn
+            (write-region
+             (organize-imports-java--get-string-from-file organize-imports-java--default-oij-config)
+             nil config-fp)
+            (message "[INFO] Created default oij configuration file: %s" config-fp))
+        (user-error "[WARNING] Include jar path file missing: %s" config-fp)))))
+
 ;;;###autoload
 (defun organize-imports-java-reload-jar-lib-paths ()
   "Reload external Java paths.
 For .jar files."
   (interactive)
   ;; Make sure the .ini/.properties file exists before making the cache file.
-  (let ((config-fp (concat (organize-imports-java--project-dir)
-                           organize-imports-java-lib-inc-file)))
-    (if (not (file-exists-p config-fp))
-        (progn
-          (if (y-or-n-p (format "Missing the %s in project root directory, create one? "
-                                organize-imports-java-lib-inc-file))
-              (progn
-                (write-region
-                 (organize-imports-java--get-string-from-file organize-imports-java--default-oij-config)
-                 nil config-fp)
-                (message "[INFO] Created default oij configuration file: %s" config-fp))
-            (user-error "[WARNING] %s"
-                        (propertize
-                         (format "Include jar path file missing: %s" config-fp)
-                         'face '(:foreground "cyan")))))
-      ;; Import all libs/jars.
-      (setq organize-imports-java--path-buffer-jar-lib
-            (organize-imports-java-unzip-lib))
+  (organize-imports-java--create-default-oij-config)
 
-      ;; Flatten it.
-      (setq organize-imports-java--path-buffer-jar-lib
-            (-flatten organize-imports-java--path-buffer-jar-lib))
+  ;; Import all libs/jars.
+  (setq organize-imports-java--path-buffer-jar-lib
+        (organize-imports-java-unzip-lib))
 
-      ;; Remove duplicates value from list.
-      (setq organize-imports-java--path-buffer-jar-lib
-            (delete-dups organize-imports-java--path-buffer-jar-lib))
+  ;; Flatten it.
+  (setq organize-imports-java--path-buffer-jar-lib
+        (-flatten organize-imports-java--path-buffer-jar-lib))
 
-      (organize-imports-java--erase-file organize-imports-java-path-jar-lib-cache-file)
-      (organize-imports-java--load-path-and-write-cache organize-imports-java--path-buffer-jar-lib
-                                                        organize-imports-java-path-jar-lib-cache-file))))
+  ;; Remove duplicates value from list.
+  (setq organize-imports-java--path-buffer-jar-lib
+        (delete-dups organize-imports-java--path-buffer-jar-lib))
+
+  (organize-imports-java--erase-file organize-imports-java-path-jar-lib-cache-file)
+  (organize-imports-java--load-path-and-write-cache organize-imports-java--path-buffer-jar-lib
+                                                    organize-imports-java-path-jar-lib-cache-file))
 
 ;;;###autoload
 (defun organize-imports-java-reload-local-source-paths ()
   "Reload internal Java paths.
 Usually Java files under project root 'src' directory."
   (interactive)
+  ;; Make sure the .ini/.properties file exists before making the cache file.
+  (organize-imports-java--create-default-oij-config)
+
   ;; Import local source files. File that isn't a jar/lib file.
   (setq organize-imports-java--path-buffer-local-source
         (organize-imports-java-get-local-source))
@@ -613,9 +617,9 @@ TYPE : path string will be store at."
 IN-CACHE : cache file name relative to project root folder."
   (let ((tmp-config-fullpath (concat (organize-imports-java--project-dir) in-cache))
         ;; Read file to buffer.
-        (tmp-path-buffer "")
+        tmp-path-buffer
         ;; Split `tmp-path-buffer', from the file.
-        (tmp-path-list '()))
+        tmp-path-list)
     ;; If the file does not exists, load the Java path once.
     ;; Get this plugin ready to use.
     (unless (file-exists-p tmp-config-fullpath)
@@ -631,12 +635,13 @@ IN-CACHE : cache file name relative to project root folder."
     ;; Read file to buffer.
     (setq tmp-path-buffer (organize-imports-java--get-string-from-file tmp-config-fullpath))
 
-    ;; Make the path buffer back to list.
-    ;;
-    ;; Why I use the word 'back'? Because when we make our
-    ;; list, we made it from one chunk of buffer/string.
-    ;; And now we split the string back to list again.
-    (setq tmp-path-list (split-string tmp-path-buffer "\n"))
+    (unless (string-empty-p tmp-path-buffer)
+      ;; Make the path buffer back to list.
+      ;;
+      ;; Why I use the word 'back'? Because when we make our
+      ;; list, we made it from one chunk of buffer/string.
+      ;; And now we split the string back to list again.
+      (setq tmp-path-list (split-string tmp-path-buffer "\n")))
 
     ;; Return all the path from list.
     tmp-path-list))
@@ -887,17 +892,13 @@ IN-CACHE : cache file name relative to project root folder."
       ;; Clear all imports before insert new imports.
       (organize-imports-java-clear-all-imports)
       ;; Path have all the classpath from local and external cache.
-      (let ((all-lib-paths '()))
-        ;; Add the local source path from local source cache.
-        (setq all-lib-paths
-              (append all-lib-paths
-                      (organize-imports-java--get-paths-from-cache
-                       organize-imports-java-path-local-source-cache-file)))
-        ;; Get the external source path from external source cache.
-        (setq all-lib-paths
-              (append all-lib-paths
-                      (organize-imports-java--get-paths-from-cache
-                       organize-imports-java-path-jar-lib-cache-file)))
+      (let* (;; Add the local source path from local source cache.
+             (local-paths (organize-imports-java--get-paths-from-cache
+                           organize-imports-java-path-local-source-cache-file))
+             ;; Get the external source path from external source cache.
+             (jar-lib-paths (organize-imports-java--get-paths-from-cache
+                             organize-imports-java-path-jar-lib-cache-file))
+             (all-lib-paths (append local-paths jar-lib-paths)))
         ;; Do insert.
         (organize-imports-java--insert-paths all-lib-paths)))))
 
