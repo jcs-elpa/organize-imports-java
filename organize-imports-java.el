@@ -222,9 +222,11 @@ If you want to keep more than one line use
     ;; Make sure have one empty line between.
     (insert "\n")))
 
-(defun organize-imports-java--get-string-from-file (file-path)
-  "Return FILE-PATH's file content."
-  (with-temp-buffer (insert-file-contents file-path) (buffer-string)))
+(defun organize-imports-java--get-string-from-file (path)
+  "Return PATH's file content."
+  (if (file-exists-p path)
+      (with-temp-buffer (insert-file-contents path) (buffer-string))
+    ""))
 
 (defun organize-imports-java--erase-file (in-filename)
   "Erase IN-FILENAME relative to project root."
@@ -431,9 +433,11 @@ For .jar files."
         (progn
           (if (y-or-n-p (format "Missing the %s in project root directory, create one? "
                                 organize-imports-java-lib-inc-file))
-              (write-region
-               (organize-imports-java--get-string-from-file organize-imports-java--default-oij-config)
-               nil config-fp)
+              (progn
+                (write-region
+                 (organize-imports-java--get-string-from-file organize-imports-java--default-oij-config)
+                 nil config-fp)
+                (message "[INFO] Created default oij configuration file: %s" config-fp))
             (user-error "[WARNING] %s"
                         (propertize
                          (format "Include jar path file missing: %s" config-fp)
