@@ -654,8 +654,6 @@ IN-CACHE : cache file name relative to project root folder."
              ;; should not happens.
              (organize-imports-java-reload-paths))))
 
-    (message "tmp-cache: %s" tmp-cache)
-
     ;; Read file to buffer.
     (setq tmp-path-buffer (organize-imports-java--get-string-from-file tmp-cache))
 
