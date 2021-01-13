@@ -66,12 +66,19 @@
   :type 'string
   :group 'organize-imports-java)
 
-(defcustom organize-imports-java-path-jar-lib-cache-file "paths-cache.oij"
+(defcustom organize-imports-java-oij-dir "./.oij/"
+  "Directory that stores all oij cache files."
+  :type 'string
+  :group 'organize-imports-java)
+
+(defcustom organize-imports-java-path-jar-lib-cache-file
+  "paths-cache.oij"
   "File generate store all the jar/lib Java paths."
   :type 'string
   :group 'organize-imports-java)
 
-(defcustom organize-imports-java-path-local-source-cache-file "paths-cache-local.oij"
+(defcustom organize-imports-java-path-local-source-cache-file
+  "paths-cache-local.oij"
   "File generate store all the local source Java paths."
   :type 'string
   :group 'organize-imports-java)
@@ -115,7 +122,8 @@
 (defvar organize-imports-java--path-buffer-local-source '()
   "All the available local source java paths store here.")
 
-(defvar organize-imports-java--serach-regexp "[a-zA-Z0-9/_-]*/[A-Z][a-zA-Z0-9$_-]*\\.class"
+(defvar organize-imports-java--serach-regexp
+  "[a-zA-Z0-9/_-]*/[A-Z][a-zA-Z0-9$_-]*\\.class"
   "Regular Expression to search for java path.")
 
 (defvar organize-imports-java-non-src-list
@@ -289,6 +297,10 @@ IN-KEY : key to search for value."
 
 ;;; Core
 
+(defun organize-imports-java--oij-dir (in-filename)
+  "Return full file path for oij cache file IN-FILENAME."
+  (concat organize-imports-java-oij-dir in-filename))
+
 (defun organize-imports-java--re-seq (regexp string)
   "Get a list of all REGEXP match in a STRING."
   (save-match-data
@@ -410,8 +422,10 @@ IN-KEY : key to search for value."
 (defun organize-imports-java-erase-cache-file ()
   "Clean all the buffer in the cache files."
   (interactive)
-  (organize-imports-java--erase-file organize-imports-java-path-jar-lib-cache-file)
-  (organize-imports-java--erase-file organize-imports-java-path-local-source-cache-file))
+  (let ((cache-jar (organize-imports-java--oij-dir organize-imports-java-path-jar-lib-cache-file))
+        (cache-local (organize-imports-java--oij-dir organize-imports-java-path-local-source-cache-file)))
+    (organize-imports-java--erase-file cache-jar)
+    (organize-imports-java--erase-file cache-local)))
 
 ;;;###autoload
 (defun organize-imports-java-reload-paths ()
@@ -455,9 +469,10 @@ For .jar files."
   (setq organize-imports-java--path-buffer-jar-lib
         (delete-dups organize-imports-java--path-buffer-jar-lib))
 
-  (organize-imports-java--erase-file organize-imports-java-path-jar-lib-cache-file)
-  (organize-imports-java--load-path-and-write-cache organize-imports-java--path-buffer-jar-lib
-                                                    organize-imports-java-path-jar-lib-cache-file))
+  (let ((cache-file (organize-imports-java--oij-dir organize-imports-java-path-jar-lib-cache-file)))
+    (organize-imports-java--erase-file cache-file)
+    (organize-imports-java--load-path-and-write-cache organize-imports-java--path-buffer-jar-lib
+                                                      cache-file)))
 
 ;;;###autoload
 (defun organize-imports-java-reload-local-source-paths ()
@@ -479,9 +494,10 @@ Usually Java files under project root 'src' directory."
   (setq organize-imports-java--path-buffer-local-source
         (delete-dups organize-imports-java--path-buffer-local-source))
 
-  (organize-imports-java--erase-file organize-imports-java-path-local-source-cache-file)
-  (organize-imports-java--load-path-and-write-cache organize-imports-java--path-buffer-local-source
-                                                    organize-imports-java-path-local-source-cache-file))
+  (let ((cache-file (organize-imports-java--oij-dir organize-imports-java-path-local-source-cache-file)))
+    (organize-imports-java--erase-file cache-file)
+    (organize-imports-java--load-path-and-write-cache organize-imports-java--path-buffer-local-source
+                                                      cache-file)))
 
 (defun organize-imports-java--load-path-and-write-cache (path-list in-filename)
   "Load the path and write the cache file.
@@ -615,14 +631,20 @@ TYPE : path string will be store at."
 (defun organize-imports-java--get-paths-from-cache (in-cache)
   "Return the list of path from IN-CHACHE.
 IN-CACHE : cache file name relative to project root folder."
-  (let ((tmp-config-fullpath (concat (organize-imports-java--project-dir) in-cache))
+  (let ((tmp-cache (concat
+                    (organize-imports-java--project-dir)
+                    (organize-imports-java--oij-dir in-cache)))
         ;; Read file to buffer.
         tmp-path-buffer
         ;; Split `tmp-path-buffer', from the file.
         tmp-path-list)
+    ;; Ensure oij cache directory exists.
+    (ignore-errors
+      (make-directory
+       (concat (organize-imports-java--project-dir) organize-imports-java-oij-dir)))
     ;; If the file does not exists, load the Java path once.
     ;; Get this plugin ready to use.
-    (unless (file-exists-p tmp-config-fullpath)
+    (unless (file-exists-p tmp-cache)
       (cond ((string= in-cache organize-imports-java-path-jar-lib-cache-file)
              (organize-imports-java-reload-jar-lib-paths))
             ((string= in-cache organize-imports-java-path-local-source-cache-file)
@@ -632,8 +654,10 @@ IN-CACHE : cache file name relative to project root folder."
              ;; should not happens.
              (organize-imports-java-reload-paths))))
 
+    (message "tmp-cache: %s" tmp-cache)
+
     ;; Read file to buffer.
-    (setq tmp-path-buffer (organize-imports-java--get-string-from-file tmp-config-fullpath))
+    (setq tmp-path-buffer (organize-imports-java--get-string-from-file tmp-cache))
 
     (unless (string-empty-p tmp-path-buffer)
       ;; Make the path buffer back to list.
@@ -889,8 +913,6 @@ IN-CACHE : cache file name relative to project root folder."
   (interactive)
   (save-window-excursion
     (save-excursion
-      ;; Clear all imports before insert new imports.
-      (organize-imports-java-clear-all-imports)
       ;; Path have all the classpath from local and external cache.
       (let* (;; Add the local source path from local source cache.
              (local-paths (organize-imports-java--get-paths-from-cache
@@ -899,8 +921,11 @@ IN-CACHE : cache file name relative to project root folder."
              (jar-lib-paths (organize-imports-java--get-paths-from-cache
                              organize-imports-java-path-jar-lib-cache-file))
              (all-lib-paths (append local-paths jar-lib-paths)))
-        ;; Do insert.
-        (organize-imports-java--insert-paths all-lib-paths)))))
+        (unless (= 0 (length all-lib-paths))
+          ;; Clear all imports before insert new imports.
+          (organize-imports-java-clear-all-imports)
+          ;; Do insert.
+          (organize-imports-java--insert-paths all-lib-paths))))))
 
 (provide 'organize-imports-java)
 ;;; organize-imports-java.el ends here
