@@ -133,6 +133,10 @@
 (defvar organize-imports-java--same-class-name-list '()
   "Paths will store temporary, use to check if multiple class exists in the environment.")
 
+(defvar organize-imports-java--default-oij-config
+  (expand-file-name "default/oij.config" organize-imports-java--home-dir)
+  "Default oij.config file path.")
+
 ;;; Util
 
 (defmacro organize-imports-java--no-log-apply (&rest body)
