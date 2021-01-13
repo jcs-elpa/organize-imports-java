@@ -11,6 +11,7 @@ organize-imports-java-pkg.el
 
 # ignore example/test files.
 oij.config
+!default/oij.config
 *.oij
 
 # ignore video
