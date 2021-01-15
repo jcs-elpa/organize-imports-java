@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/jcs090218/organize-imports-java.svg?branch=master)](https://travis-ci.com/jcs090218/organize-imports-java)
+[![Build Status](https://travis-ci.com/jcs-elpa/organize-imports-java.svg?branch=master)](https://travis-ci.com/jcs-elpa/organize-imports-java)
 [![MELPA](https://melpa.org/packages/organize-imports-java-badge.svg)](https://melpa.org/#/organize-imports-java)
 [![MELPA Stable](https://stable.melpa.org/packages/organize-imports-java-badge.svg)](https://stable.melpa.org/#/organize-imports-java)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
