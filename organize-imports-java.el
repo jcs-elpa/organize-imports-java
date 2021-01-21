@@ -342,10 +342,11 @@ IN-KEY : key to search for value."
   (let* ((src-file-path-list '())
          (project-source-dir (concat (organize-imports-java--project-dir)
                                      organize-imports-java-source-dir-name "/")))
-    (setq src-file-path-list (f--files project-source-dir
-                                       (and (string= (f-ext it) "java")
-                                            (not (string-match-p "#" (f-filename it))))
-                                       t))
+    (when (file-directory-p project-source-dir)
+      (setq src-file-path-list (f--files project-source-dir
+                                         (and (string= (f-ext it) "java")
+                                              (not (string-match-p "#" (f-filename it))))
+                                         t)))
 
     (let ((index 0) (current-dirname "") (last-dirname ""))
       (dolist (src-file-path src-file-path-list)
