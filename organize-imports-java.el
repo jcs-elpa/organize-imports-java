@@ -140,7 +140,8 @@
   "Priority list of the insertion.  Insertion will be base on this list order.")
 
 (defvar organize-imports-java--same-class-name-list '()
-  "Paths will store temporary, use to check if multiple class exists in the environment.")
+  "Paths will store temporary, use to check if multiple class exists in the
+environment.")
 
 (defvar organize-imports-java--default-oij-config
   (expand-file-name "default/oij.config" organize-imports-java--home-dir)
