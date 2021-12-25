@@ -20,7 +20,7 @@ IDE Eclipse's C-S-o key.
 ## How to use?
 
 1. Create an `oij.config` file at the version control root directory.
-An example can be found below in the ìConfig Exampleî section.
+An example can be found below in the ‚ÄúConfig Example‚Äù section.
 2. After you have included all the Java Libraries into the `oij.config`
 file. You can run `organize-imports-java-do-imports` and it will load
 the included jar path in the `oij.config` file and import in the current
@@ -149,7 +149,11 @@ file in your local source directory.
 * Performance is terrible when loading all the jar files to path. Hopefully I can 
 find out a way to get around this issue.
 
-## Contribution
+## Contribute
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Elisp styleguide](https://img.shields.io/badge/elisp-style%20guide-purple)](https://github.com/bbatsov/emacs-lisp-style-guide)
+[![Donate on paypal](https://img.shields.io/badge/paypal-donate-1?logo=paypal&color=blue)](https://www.paypal.me/jcs090218)
 
 If you would like to contribute to this project, you may either 
 clone and make pull requests to this repository. Or you can 
