@@ -1,4 +1,4 @@
-# ignore these directories.
+# ignore these directories
 /.git
 /.oij
 /recipes
@@ -7,13 +7,20 @@
 /test_lib
 organize-imports-java-pkg.el
 
-# ignore generated files.
-*.elc
-
-# ignore example/test files.
+# ignore example/test files
 oij.config
 !default/oij.config
 *.oij
+
+# ignore generated files
+*.elc
+
+# cask packages
+.cask/
+dist/
+
+# eask packages
+/.eask
 
 # ignore video
 /video
