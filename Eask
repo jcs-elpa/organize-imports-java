@@ -4,6 +4,9 @@
 
 (package-file "organize-imports-java.el")
 
+(files "sdk" "default")
+
+(source "gnu")
 (source "melpa")
 
 (depends-on "emacs" "25.1")
