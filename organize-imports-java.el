@@ -4,11 +4,10 @@
 ;; Created date 2018-04-16 13:12:01
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
-;; Description: Automatically organize imports in Java code.
-;; Keyword: organize imports java handy eclipse
+;; URL: https://github.com/jcs-elpa/organize-imports-java
 ;; Version: 0.3.0
 ;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0") (dash "2.14.1") (ht "2.2"))
-;; URL: https://github.com/jcs-elpa/organize-imports-java
+;; Keywords: organize imports java handy eclipse
 
 ;; This file is NOT part of GNU Emacs.
 
