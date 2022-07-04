@@ -7,7 +7,7 @@
 ;; URL: https://github.com/jcs-elpa/organize-imports-java
 ;; Version: 0.3.0
 ;; Package-Requires: ((emacs "25.1") (f "0.20.0") (s "1.12.0") (dash "2.14.1") (ht "2.2"))
-;; Keywords: organize imports java handy eclipse
+;; Keywords: convenience organize imports java eclipse
 
 ;; This file is NOT part of GNU Emacs.
 
