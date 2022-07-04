@@ -3,7 +3,7 @@
          "Automatically organize imports in Java code")
 
 (website-url "https://github.com/jcs-elpa/organize-imports-java")
-(keywords "organize" "imports" "java" "handy" "eclipse")
+(keywords "convenience" "organize" "imports" "java" "eclipse")
 
 (package-file "organize-imports-java.el")
 
