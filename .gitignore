@@ -24,3 +24,6 @@ dist/
 
 # ignore video
 /video
+
+# OS generated
+.DS_Store
