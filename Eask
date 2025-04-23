@@ -1,3 +1,5 @@
+;; -*- mode: eask; lexical-binding: t -*-
+
 (package "organize-imports-java"
          "0.3.0"
          "Automatically organize imports in Java code")
